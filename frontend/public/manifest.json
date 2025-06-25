@@ -1,0 +1,21 @@
+{
+  "name": "Warehouse Management System",
+  "short_name": "WMS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "description": "Hệ thống Quản lý Xuất Nhập Kho Thông minh - Giải pháp quản lý kho hiện đại với QR code, theo dõi real-time và báo cáo chi tiết.",
+  "icons": [
+    {
+      "src": "icons/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

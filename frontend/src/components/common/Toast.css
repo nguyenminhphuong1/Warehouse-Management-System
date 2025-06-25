@@ -1,0 +1,122 @@
+/*
+ * File: frontend/src/components/common/Toast.css
+ * Description: Modern toast notification system with animations
+ * Author: Warehouse Management System
+ * Created: 2025
+ */
+
+/* Toast Container */
+.toast-container {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+/* Position variants */
+.toast-container.top-right {
+  top: 20px;
+  right: 20px;
+}
+
+.toast-container.top-left {
+  top: 20px;
+  left: 20px;
+}
+
+.toast-container.top-center {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.toast-container.bottom-right {
+  bottom: 20px;
+  right: 20px;
+  flex-direction: column-reverse;
+}
+
+.toast-container.bottom-left {
+  bottom: 20px;
+  left: 20px;
+  flex-direction: column-reverse;
+}
+
+.toast-container.bottom-center {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: column-reverse;
+}
+
+/* Toast Item */
+.toast {
+  pointer-events: auto;
+  background: var(--bg-primary, #ffffff);
+  border-radius: 12px;
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color, #e5e7eb);
+  min-width: 320px;
+  max-width: 480px;
+  overflow: hidden;
+  position: relative;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Toast states */
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast.hide {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* Left position toasts */
+.toast-container.top-left .toast,
+.toast-container.bottom-left .toast {
+  transform: translateX(-100%);
+}
+
+.toast-container.top-left .toast.show,
+.toast-container.bottom-left .toast.show {
+  transform: translateX(0);
+}
+
+.toast-container.top-left .toast.hide,
+.toast-container.bottom-left .toast.hide {
+  transform: translateX(-100%);
+}
+
+/* Center position toasts */
+.toast-container.top-center .toast,
+.toast-container.bottom-center .toast {
+  transform: translateY(-100%);
+}
+
+.toast-container.top-center .toast.show,
+.toast-container.bottom-center .toast.show {
+  transform: translateY(0);
+}
+
+.toast-container.top-center .toast.hide,
+.toast-container.bottom-center .toast.hide {
+  transform: translateY(-100%);
+}
+
+/* Toast types */
+.toast.success {
+  border-left: 4px solid #10b981;
+}
+

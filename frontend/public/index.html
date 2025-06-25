@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#007bff" />
+    <meta name="description" content="Hệ thống Quản lý Xuất Nhập Kho Thông minh - Giải pháp quản lý kho hiện đại với QR code, theo dõi real-time và báo cáo chi tiết" />
+    <meta name="keywords" content="quản lý kho, warehouse management, inventory, QR code, logistics, xuất nhập kho" />
+    <meta name="author" content="Warehouse Management Team" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://warehouse.company.com/" />
+    <meta property="og:title" content="Warehouse Management System - Hệ thống Quản lý Kho" />
+    <meta property="og:description" content="Hệ thống Quản lý Xuất Nhập Kho Thông minh với QR code, theo dõi real-time và báo cáo chi tiết" />
+    <meta property="og:image" content="%PUBLIC_URL%/images/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://warehouse.company.com/" />
+    <meta property="twitter:title" content="Warehouse Management System - Hệ thống Quản lý Kho" />
+    <meta property="twitter:description" content="Hệ thống Quản lý Xuất Nhập Kho Thông minh với QR code, theo dõi real-time và báo cáo chi tiết" />
+    <meta property="twitter:image" content="%PUBLIC_URL%/images/twitter-image.png" />
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/icons/favicon-16x16.png" />
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Font Loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Icon Font (if using) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons@4.29.0/dist/feather.min.css" />
+    
+    <!-- Critical CSS for above-the-fold content -->
+    <style>
+      /* Critical CSS - Loading Screen */
+      .app-loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-family: 'Inter', sans-serif;
+        z-index: 9999;
+      }
+      
+      .loading-logo {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 2rem;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+      }
+      
+      .loading-text {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+      
+      .loading-subtext {
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.05); }
+      }
+      
+      /* Hide loading screen when React is ready */
+      .app-loaded .app-loading-screen {
+        display: none;
+      }
+      
+      /* Prevent flash of unstyled content */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        background-color: #f8f9fa;
+        overflow: hidden;
+      }
+      
+      .app-loaded body {
+        overflow: auto;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Basic responsive design */
+      @media (max-width: 768px) {
+        .loading-logo {
+          width: 60px;
+          height: 60px;
+        }
+        
+        .loading-text {
+          font-size: 1rem;
+        }
+        
+        .loading-subtext {
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="%PUBLIC_URL%/sounds/success.mp3" as="audio" />
+    <link rel="preload" href="%PUBLIC_URL%/sounds/error.mp3" as="audio" />
+    <link rel="preload" href="%PUBLIC_URL%/images/logo.png" as="image" />
+    
+    <title>Warehouse Management System - Hệ thống Quản lý Kho</title>
+  </head>
+  <body>
+    <!-- No JavaScript fallback -->
+    <noscript>
+      <div style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 2rem;
+        box-sizing: border-box;
+      ">
+        <div style="
+          background: rgba(255, 255, 255, 0.1);
+          padding: 3rem;
+          border-radius: 1rem;
+          backdrop-filter: blur(10px);
+          max-width: 500px;
+        ">
+          <h1 style="font-size: 2rem; margin-bottom: 1rem;">JavaScript Bị Tắt</h1>
+          <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem;">
+            Hệ thống Quản lý Kho cần JavaScript để hoạt động. 
+            Vui lòng bật JavaScript trong trình duyệt của bạn và tải lại trang.
+          </p>
+          <div style="margin-bottom: 2rem;">
+            <h3>Hướng dẫn bật JavaScript:</h3>
+            <ul style="text-align: left; margin: 1rem 0;">
+              <li><strong>Chrome:</strong> Settings → Privacy and security → Site Settings → JavaScript</li>
+              <li><strong>Firefox:</strong> about:config → javascript.enabled → true</li>
+              <li><strong>Safari:</strong> Preferences → Security → Enable JavaScript</li>
+              <li><strong>Edge:</strong> Settings → Site permissions → JavaScript</li>
+            </ul>
+          </div>
+          <button onclick="window.location.reload()" style="
+            background: white;
+            color: #dc3545;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+          ">
+            Tải lại trang
+          </button>
+        </div>
+      </div>
+    </noscript>
+    
+    <!-- Loading Screen -->
+    <div class="app-loading-screen" id="loading-screen">
+      <img src="%PUBLIC_URL%/images/logo.png" alt="Logo" class="loading-logo" />
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Đang tải hệ thống...</div>
+      <div class="loading-subtext">Warehouse Management System</div>
+    </div>
+    
+    <!-- React App Root -->
+    <div id="root"></div>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      // Remove loading screen when React is ready
+      function hideLoadingScreen() {
+        const loadingScreen = document.getElementById('loading-screen');
+        const body = document.body;
+        
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          loadingScreen.style.transition = 'opacity 0.5s ease';
+          
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            body.classList.add('app-loaded');
+          }, 500);
+        }
+      }
+      
+      // Hide loading screen after React app is mounted
+      window.addEventListener('load', () => {
+        // Give React time to mount
+        setTimeout(hideLoadingScreen, 1000);
+      });
+      
+      // Fallback: Hide loading screen after maximum wait time
+      setTimeout(hideLoadingScreen, 10000);
+      
+      // Service Worker Registration
+      if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+              
+              // Check for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // New content is available, prompt user to refresh
+                    if (confirm('Có phiên bản mới của ứng dụng. Bạn có muốn tải lại không?')) {
+                      window.location.reload();
+                    }
+                  }
+                });
+              });
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+      
+      // Performance monitoring
+      window.addEventListener('load', () => {
+        // Mark when the app is fully loaded
+        if (window.performance && window.performance.mark) {
+          window.performance.mark('app-loaded');
+        }
+        
+        // Log performance metrics
+        setTimeout(() => {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          if (perfData) {
+            console.log('Performance Metrics:', {
+              loadTime: perfData.loadEventEnd - perfData.loadEventStart,
+              domContentLoaded: perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
+              firstPaint: performance.getEntriesByType('paint').find(entry => entry.name === 'first-paint')?.startTime,
+              firstContentfulPaint: performance.getEntriesByType('paint').find(entry => entry.name === 'first-contentful-paint')?.startTime
+            });
+          }
+        }, 1000);
+      });
+      
+      // Error handling
+      window.addEventListener('error', (event) => {
+        console.error('Global error:', event.error);
+        
+        // Could send to error reporting service
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'exception', {
+            description: event.error?.message || 'Unknown error',
+            fatal: false
+          });
+        }
+      });
+      
+      // Unhandled promise rejections
+      window.addEventListener('unhandledrejection', (event) => {
+        console.error('Unhandled promise rejection:', event.reason);
+        
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'exception', {
+            description: `Unhandled Promise: ${event.reason}`,
+            fatal: false
+          });
+        }
+      });
+      
+      // Detect if user is offline
+      window.addEventListener('online', () => {
+        console.log('App is online');
+      });
+      
+      window.addEventListener('offline', () => {
+        console.log('App is offline');
+      });
+    </script>
+    
+    <!-- Google Analytics (if enabled) -->
+    <!-- 
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
+    -->
+  </body>
+</html>

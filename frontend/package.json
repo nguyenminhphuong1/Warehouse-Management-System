@@ -1,0 +1,77 @@
+{
+  "name": "warehouse-management-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hệ thống Quản lý Xuất Nhập Kho Thông minh - Frontend",
+  "homepage": ".",
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.5.2",
+    "axios": "^1.6.8",
+    "qrcode.react": "^3.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3",
+    "react-scripts": "5.0.1",
+    "react-toastify": "^10.0.5",
+    "web-vitals": "^3.5.2",
+    "date-fns": "^3.6.0",
+    "lodash": "^4.17.21",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
+    "file-saver": "^2.0.5",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.0",
+    "@types/react": "^18.2.74",
+    "@types/react-dom": "^18.2.23",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.2.5",
+    "sass": "^1.72.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "analyze": "npm run build && npx bundle-analyzer build/static/js/*.js",
+    "docker:build": "docker build -t warehouse-frontend .",
+    "docker:run": "docker run -p 3000:3000 warehouse-frontend",
+    "deploy:staging": "npm run build && npm run docker:build",
+    "deploy:production": "npm run build && npm run docker:build && docker tag warehouse-frontend warehouse-frontend:production"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "proxy": "http://localhost:8000",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "warehouse",
+    "inventory",
+    "management",
+    "react",
+    "qr-code",
+    "logistics"
+  ],
+  "author": "Warehouse Management Team",
+  "license": "MIT"
+}

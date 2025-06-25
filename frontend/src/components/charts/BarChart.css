@@ -1,0 +1,471 @@
+/*
+ * File: frontend/src/components/charts/BarChart.css
+ * Description: Modern bar chart component with animations and responsive design
+ * Author: Warehouse Management System
+ * Created: 2025
+ */
+
+/* Chart Container */
+.bar-chart-container {
+  position: relative;
+  background: var(--bg-primary, #ffffff);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color, #e5e7eb);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.bar-chart-container:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Chart Header */
+.bar-chart-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  background: var(--bg-secondary, #fafbfc);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.bar-chart-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-chart-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary, #6b7280);
+  margin: 4px 0 0 0;
+}
+
+.bar-chart-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.bar-chart-action-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #d1d5db);
+  background: var(--bg-primary, #ffffff);
+  color: var(--text-secondary, #6b7280);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bar-chart-action-btn:hover {
+  background: var(--bg-secondary, #f9fafb);
+  color: var(--text-primary, #374151);
+}
+
+.bar-chart-action-btn.active {
+  background: var(--primary-color, #3b82f6);
+  color: white;
+  border-color: var(--primary-color, #3b82f6);
+}
+
+/* Chart Body */
+.bar-chart-body {
+  padding: 24px;
+  position: relative;
+}
+
+/* Chart Canvas */
+.bar-chart-canvas {
+  width: 100%;
+  height: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-chart-canvas.sm {
+  height: 200px;
+}
+
+.bar-chart-canvas.lg {
+  height: 400px;
+}
+
+.bar-chart-canvas.xl {
+  height: 500px;
+}
+
+/* SVG Chart */
+.bar-chart-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Chart Bars */
+.bar-chart-bar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.bar-chart-bar:hover {
+  opacity: 0.8;
+  filter: brightness(1.1);
+}
+
+.bar-chart-bar.animated {
+  animation: barGrow 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes barGrow {
+  from {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+  to {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+}
+
+/* Chart Grid */
+.bar-chart-grid-line {
+  stroke: var(--border-color, #f1f5f9);
+  stroke-width: 1;
+  stroke-dasharray: 2,2;
+}
+
+/* Chart Axes */
+.bar-chart-axis {
+  stroke: var(--border-color, #e5e7eb);
+  stroke-width: 1;
+}
+
+.bar-chart-axis-label {
+  font-size: 12px;
+  fill: var(--text-secondary, #6b7280);
+  font-weight: 500;
+}
+
+.bar-chart-axis-title {
+  font-size: 14px;
+  fill: var(--text-primary, #374151);
+  font-weight: 600;
+}
+
+/* Chart Tooltip */
+.bar-chart-tooltip {
+  position: absolute;
+  background: var(--bg-primary, #1f2937);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transform: translate(-50%, -100%);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.bar-chart-tooltip.show {
+  opacity: 1;
+}
+
+.bar-chart-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--bg-primary, #1f2937);
+}
+
+.bar-chart-tooltip-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.bar-chart-tooltip-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-chart-tooltip-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* Chart Legend */
+.bar-chart-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, #f1f5f9);
+}
+
+.bar-chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.bar-chart-legend-item:hover {
+  background: var(--bg-secondary, #f9fafb);
+}
+
+.bar-chart-legend-item.disabled {
+  opacity: 0.5;
+}
+
+.bar-chart-legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.bar-chart-legend-label {
+  font-size: 14px;
+  color: var(--text-primary, #374151);
+  font-weight: 500;
+}
+
+/* Loading State */
+.bar-chart-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--text-secondary, #6b7280);
+}
+
+.bar-chart-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color, #e5e7eb);
+  border-top: 3px solid var(--primary-color, #3b82f6);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 12px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Empty State */
+.bar-chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--text-secondary, #6b7280);
+  text-align: center;
+}
+
+.bar-chart-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.bar-chart-empty-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.bar-chart-empty-subtext {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* Chart Variants */
+.bar-chart-container.horizontal .bar-chart-bar {
+  transform-origin: left;
+}
+
+.bar-chart-container.horizontal .bar-chart-bar.animated {
+  animation: barGrowHorizontal 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes barGrowHorizontal {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.bar-chart-container.stacked .bar-chart-bar {
+  animation-delay: calc(var(--index) * 0.1s);
+}
+
+.bar-chart-container.grouped .bar-chart-bar {
+  animation-delay: calc(var(--index) * 0.05s);
+}
+
+/* Chart Statistics */
+.bar-chart-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, #f1f5f9);
+}
+
+.bar-chart-stat {
+  text-align: center;
+}
+
+.bar-chart-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-color, #3b82f6);
+  display: block;
+}
+
+.bar-chart-stat-label {
+  font-size: 12px;
+  color: var(--text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bar-chart-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .bar-chart-body {
+    padding: 20px;
+  }
+  
+  .bar-chart-canvas {
+    height: 250px;
+  }
+  
+  .bar-chart-legend {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .bar-chart-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .bar-chart-actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .bar-chart-header {
+    padding: 12px 16px;
+  }
+  
+  .bar-chart-body {
+    padding: 16px;
+  }
+  
+  .bar-chart-canvas {
+    height: 200px;
+  }
+  
+  .bar-chart-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .bar-chart-title {
+    font-size: 16px;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .bar-chart-container {
+    background: var(--bg-primary, #1f2937);
+    border-color: var(--border-color, #374151);
+  }
+  
+  .bar-chart-header {
+    background: var(--bg-secondary, #111827);
+    border-color: var(--border-color, #374151);
+  }
+  
+  .bar-chart-tooltip {
+    background: var(--bg-secondary, #111827);
+    border: 1px solid var(--border-color, #374151);
+  }
+  
+  .bar-chart-tooltip::after {
+    border-top-color: var(--bg-secondary, #111827);
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .bar-chart-container {
+    border: 2px solid var(--text-primary, #000000);
+  }
+  
+  .bar-chart-bar {
+    stroke: var(--text-primary, #000000);
+    stroke-width: 1;
+  }
+  
+  .bar-chart-grid-line {
+    stroke: var(--text-primary, #000000);
+    stroke-dasharray: none;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .bar-chart-bar,
+  .bar-chart-container,
+  .bar-chart-legend-item,
+  .bar-chart-tooltip {
+    transition: none;
+    animation: none;
+  }
+  
+  .bar-chart-container:hover {
+    transform: none;
+  }
+}
