@@ -1,6 +1,7 @@
 # backend/apps/accounts/models/permission.py
 
 from django.db import models
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 from apps.accounts.models.role import Role
 from apps.accounts.models.user import User
@@ -445,10 +446,7 @@ class PermissionAuditLog(models.Model):
             'ip_address': self.ip_address,
             'timestamp': self.timestamp,
             'notes': self.notes
-        }.expires_at += timedelta(days=days)
-        else:
-            self.expires_at = timezone.now() + timedelta(days=days)
-        self.save()
+        }
     
     def revoke(self, reason="", revoked_by=None):
         """Thu hồi quyền"""

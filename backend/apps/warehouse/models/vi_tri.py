@@ -3,7 +3,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
-from .khu_vuc import KhuVuc
+from django.utils import timezone
 
 class ViTriKho(models.Model):
     """
@@ -30,7 +30,7 @@ class ViTriKho(models.Model):
     )
     
     khu_vuc = models.ForeignKey(
-        KhuVuc,
+        'warehouse.KhuVuc',
         on_delete=models.CASCADE,
         related_name='vi_tri_set',
         help_text="Khu vực chứa vị trí này"
@@ -212,7 +212,7 @@ class ViTriKho(models.Model):
         pallet.save()
         
         # Log thay đổi
-        from apps.warehouse.models.lich_su import LichSuXuatNhap
+        from orders.models import LichSuXuatNhap
         LichSuXuatNhap.objects.create(
             pallet=pallet,
             loai_giao_dich='Nhập',
@@ -229,7 +229,7 @@ class ViTriKho(models.Model):
         pallet = self.pallet
         
         # Log thay đổi
-        from apps.warehouse.models.lich_su import LichSuXuatNhap
+        from orders.models import LichSuXuatNhap
         LichSuXuatNhap.objects.create(
             pallet=pallet,
             loai_giao_dich='Xuất',

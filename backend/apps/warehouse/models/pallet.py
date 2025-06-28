@@ -61,7 +61,7 @@ class Pallet(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="Vị trí lưu trữ trong kho"
+        related_name='pallet_set',
     )
     
     # Thông tin thời gian
@@ -387,7 +387,7 @@ class Pallet(models.Model):
         self.save()
         
         # Ghi log
-        from .lich_su import LichSuXuatNhap
+        from orders.models import LichSuXuatNhap
         LichSuXuatNhap.objects.create(
             pallet=self,
             loai_giao_dich='Xuất',
@@ -430,7 +430,7 @@ class Pallet(models.Model):
         self.save()
         
         # Ghi log
-        from .lich_su import LichSuXuatNhap
+        from orders.models import LichSuXuatNhap
         LichSuXuatNhap.objects.create(
             pallet=self,
             loai_giao_dich='Di_chuyển',
