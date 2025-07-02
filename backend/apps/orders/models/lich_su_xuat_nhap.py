@@ -28,7 +28,9 @@ class LichSuXuatNhap(models.Model):
 
     don_xuat = models.ForeignKey(
         'orders.DonXUat', 
-        models.PROTECT
+        models.PROTECT,
+        null=True,
+        blank=True,  
     )
 
     nguoi_thuc_hien = models.CharField(

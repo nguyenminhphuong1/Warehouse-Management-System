@@ -106,7 +106,7 @@ class ChiTietDon(models.Model):
     def get_suitable_pallet(self, so_luong):
         from apps.warehouse.models import Pallet
         pallets = Pallet.objects.filter(
-            san_pham=self.san_pham,    
+            san_pham=self.san_pham, 
         ).exclude(
             trang_thai__in=['Hỏng', 'Trống']
         ).select_related('vi_tri_kho')

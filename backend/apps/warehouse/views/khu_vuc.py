@@ -77,4 +77,39 @@ class KhuVucViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         except Exception as e:
             return Response({"error":str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    #API set 1 khu vực vào trạng thái bảo trì
+    @swagger_auto_schema(
+        method='get',
+        operation_summary="Set trạng thái báo trì",
+        operation_description="API set 1 khu vực về trạng thái bảo trì",
+        responses={200: openapi.Response(description="Thành công")}
+    )
+    @action(detail=True, methods=['get'], url_path='set_maintain')
+    def set_maintain(self, request, pk=None):
+        try:
+            khu_vuc = self.get_object()
+            nguoi_thuc_hien = request.user
+            ly_do = request.data.get("ly_do", "")
+            khu_vuc.set_maintenance(reason=ly_do, user=nguoi_thuc_hien)
+            return Response({f"Bảo trì khu vực {khu_vuc.ma_khu_vuc}."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    #API set hoàn thành bảo trì cho khu vực 
+    @swagger_auto_schema(
+        method='get',
+        operation_summary="Hoàn thành bảo trì cho 1 khu vực",
+        operation_description="API trả lại trạng thái bình thường của 1 khu vực",
+        responses={200: openapi.Response(description="Thành công")}
+    )
+    @action(detail=True, methods=['get'], url_path='complete_maintain')
+    def complete_maintain(self, request, pk=None):
+        try:
+            khu_vuc = self.get_object()
+            nguoi_thuc_hien = request.user
+            khu_vuc.complete_maintenance(user=nguoi_thuc_hien)
+            return Response({f"Hoàn thành bảo trì khu vực {khu_vuc.ma_khu_vuc}."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     

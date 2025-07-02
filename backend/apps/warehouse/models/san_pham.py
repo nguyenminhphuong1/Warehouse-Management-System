@@ -22,6 +22,7 @@ class SanPham(models.Model):
     nhom_hang = models.ForeignKey(
         'warehouse.NhomHang', 
         models.PROTECT,
+        related_name='san_pham_set'
     )
     
     thuong_hieu = models.CharField(

@@ -8,11 +8,14 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django_filters.rest_framework import DjangoFilterBackend
 
 class PalletViewSet(viewsets.ModelViewSet):
     queryset = Pallet.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = PalletSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['san_pham', 'vi_tri_kho', 'nha_cung_cap']
 
     #API lấy ra thông tin chi tiết các pallet
     @swagger_auto_schema(

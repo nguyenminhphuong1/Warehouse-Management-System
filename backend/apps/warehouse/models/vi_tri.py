@@ -211,9 +211,6 @@ class ViTriKho(models.Model):
         self.trang_thai = 'Có_hàng'
         self.save()
         
-        # Cập nhật pallet
-        pallet.vi_tri_kho = self
-        pallet.save()
         
         # Log thay đổi
         from apps.orders.models import LichSuXuatNhap
@@ -222,7 +219,7 @@ class ViTriKho(models.Model):
             loai_giao_dich='Nhập',
             so_luong=pallet.so_thung_ban_dau,
             nguoi_thuc_hien=user.username if user else 'System',
-            ghi_chu=f'Gán vào vị trí {self.ma_vi_tri}'
+            ghi_chu=f'Gán vào pallet {self.pallet.ma_pallet} vị trí {self.ma_vi_tri}'
         )
     
     def remove_pallet(self, user=None, reason=""):
@@ -239,12 +236,8 @@ class ViTriKho(models.Model):
             loai_giao_dich='Xuất',
             so_luong=pallet.so_thung_con_lai,
             nguoi_thuc_hien=user.username if user else 'System',
-            ghi_chu=f'Xóa khỏi vị trí {self.ma_vi_tri}. {reason}'
+            ghi_chu=f'Xóa pallet {self.pallet.ma_pallet} khỏi vị trí {self.ma_vi_tri}. {reason}'
         )
-        
-        # Cập nhật
-        pallet.vi_tri_kho = None
-        pallet.save()
         
         self.pallet = None
         self.trang_thai = 'Trống'
@@ -337,6 +330,9 @@ class ViTriKho(models.Model):
             # Hàng cũ hơn có priority thấp hơn
             days_old = (timezone.now().date() - self.pallet.ngay_san_xuat).days
             priority -= days_old * 0.1
+
+        if self.pallet:
+            is_priority = self.pallet.tinh_trang_hang_set.filter(trang_thai="Ưu_tiên").exists()
         
         # Khoảng cách đến cửa ra
         priority += self.get_distance_to_exit()

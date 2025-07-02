@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 
 
 class TinhTrangHang(models.Model):
-    pallet = models.ForeignKey('warehouse.Pallet', models.PROTECT)
+    pallet = models.ForeignKey('warehouse.Pallet', models.PROTECT, related_name='tinh_trang_hang_set')
     loai_tinh_trang = models.CharField(max_length=30, choices=[
         ('Bình_thường', 'Bình thường'),
         ('Sắp_hết_hạn', 'Sắp hết hạn'),
@@ -49,3 +49,11 @@ class TinhTrangHang(models.Model):
 
         if errors:
             raise ValidationError(errors)
+        
+    def set_priority(self):
+        self.loai_tinh_trang = "Ưu_tiên_xuất"
+        self.save()
+
+    def create_note(self, ghi_chu):
+        self.ghi_chu = ghi_chu
+        self.save()
