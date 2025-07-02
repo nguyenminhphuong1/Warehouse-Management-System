@@ -1,8 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.core.exceptions import ValidationError
-from django.utils import timezone
-from datetime import datetime, timedelta
+
 
 class LichSuXuatNhap(models.Model):
     LOAI_GIAO_DICH_CHOICES = [
@@ -11,18 +9,39 @@ class LichSuXuatNhap(models.Model):
         ('Di_chuyển', 'Di chuyển'),
         ('Điều_chỉnh', 'Điều chỉnh'),
     ]
-    pallets = models.ForeignKey('warehouse.Pallet', models.PROTECT)
+
+    pallets = models.ForeignKey(
+        'warehouse.Pallet', 
+        models.PROTECT
+    )
+
     loai_giao_dich = models.CharField(
         max_length=20,
-        null=False,
         choices=LOAI_GIAO_DICH_CHOICES,
         default='Nhập'
-        )
-    so_luong = models.IntegerField(null=False)
-    don_xuat = models.ForeignKey('orders.DonXUat', models.PROTECT)
-    nguoi_thuc_hien = models.CharField(null=False, default='')
+    )
+
+    so_luong = models.IntegerField(
+        validators=[MinValueValidator(1)],
+        blank=True,
+    )
+
+    don_xuat = models.ForeignKey(
+        'orders.DonXUat', 
+        models.PROTECT
+    )
+
+    nguoi_thuc_hien = models.CharField(
+        default='',
+        blank=True,
+    )
+
     ngay_thuc_hien = models.DateTimeField(auto_now_add=True)
-    ghi_chu = models.TextField(null=False, default='')
+
+    ghi_chu = models.TextField(
+        blank=True,
+        default=''
+    )
 
     class Meta:
         db_table = 'lich_su_xuat_nhap'

@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from ..models import BaoTri
+from apps.core.utils.validators import ModelCleanMixin
 
-class BaoTriSerializer(serializers.ModelSerializer):
+class BaoTriSerializer(ModelCleanMixin, serializers.ModelSerializer):
     class Meta:
         model = BaoTri
         fields = '__all__'

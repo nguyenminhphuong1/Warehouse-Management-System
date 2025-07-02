@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from ..models import ThuTuXuatHang
+from apps.core.utils.validators import ModelCleanMixin
 
-class ThuTuXuatHangSerializer(serializers.ModelSerializer):
+class ThuTuXuatHangSerializer(ModelCleanMixin, serializers.ModelSerializer):
     class Meta:
         model = ThuTuXuatHang
         fields = '__all__'

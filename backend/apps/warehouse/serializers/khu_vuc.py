@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from ..models import KhuVuc
+from apps.core.utils.validators import ModelCleanMixin
 
-class KhuVucSerializer(serializers.ModelSerializer):
+class KhuVucSerializer(ModelCleanMixin, serializers.ModelSerializer):
     class Meta:
         model = KhuVuc
         fields = '__all__'

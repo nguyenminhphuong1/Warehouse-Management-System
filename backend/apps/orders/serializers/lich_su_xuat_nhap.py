@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from ..models import LichSuXuatNhap
+from apps.core.utils.validators import ModelCleanMixin
 
-class LichSuXuatNhapSerializer(serializers.ModelSerializer):
+class LichSuXuatNhapSerializer(ModelCleanMixin, serializers.ModelSerializer):
     class Meta:
         model = LichSuXuatNhap
         fields = '__all__'

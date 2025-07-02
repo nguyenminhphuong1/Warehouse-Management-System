@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from ..models import SanPham
+from apps.core.utils.validators import ModelCleanMixin
 
-class SanPhamSerializer(serializers.ModelSerializer):
+class SanPhamSerializer(ModelCleanMixin, serializers.ModelSerializer):
     class Meta:
         model = SanPham
         fields = '__all__'

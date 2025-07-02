@@ -1,24 +1,20 @@
 from django.db import models
-from django.core.validators import MinValueValidator
-from django.core.exceptions import ValidationError
-from django.utils import timezone
-from datetime import datetime, timedelta
 
 class ThuTuXuatHang(models.Model):
     don_xuat = models.ForeignKey(
         'orders.DonXUat', 
         models.PROTECT
-        )
+    )
     
     san_pham = models.ForeignKey(
         'warehouse.SanPham', 
         models.PROTECT
-        )
+    )
 
-    thu_tu_mac_dinh = models.IntegerField(null=False)
-    thu_tu_tuy_chinh = models.IntegerField()
-    thoi_gian_uoc_tinh = models.IntegerField(null=False, default=0)
-    khoang_cach_uoc_tinh = models.IntegerField(null=False, default=0)
+    thu_tu_mac_dinh = models.IntegerField(blank=True,)
+    thu_tu_tuy_chinh = models.IntegerField(null=True, blank=True,)
+    thoi_gian_uoc_tinh = models.IntegerField(default=0, blank=True,)
+    khoang_cach_uoc_tinh = models.IntegerField(default=0, blank=True,)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -46,6 +46,7 @@ class KhuVuc(models.Model):
     tai_trong_max = models.DecimalField(
         max_digits=10,
         decimal_places=2,
+        blank=True,
         default=0,
         validators=[MinValueValidator(0)],
         help_text="Tải trọng tối đa (kg)"
@@ -54,6 +55,7 @@ class KhuVuc(models.Model):
     nhiet_do_min = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        blank=True,
         default=0,
         help_text="Nhiệt độ tối thiểu (°C)"
     )
@@ -61,6 +63,7 @@ class KhuVuc(models.Model):
     nhiet_do_max = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        blank=True,
         default=40,
         help_text="Nhiệt độ tối đa (°C)"
     )
@@ -68,6 +71,7 @@ class KhuVuc(models.Model):
     do_am_min = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        blank=True,
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         help_text="Độ ẩm tối thiểu (%)"
@@ -76,6 +80,7 @@ class KhuVuc(models.Model):
     do_am_max = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        blank=True,
         default=100,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         help_text="Độ ẩm tối đa (%)"
@@ -107,15 +112,16 @@ class KhuVuc(models.Model):
         return f"{self.ma_khu_vuc} - {self.ten_khu_vuc}"
     
     def clean(self):
-        """Validate model"""
-        super().clean()
-        
+        """Validate model"""  
+        errors = {}      
         if self.nhiet_do_min >= self.nhiet_do_max:
-            raise ValidationError('Nhiệt độ tối thiểu phải nhỏ hơn nhiệt độ tối đa')
-        
+            errors['nhiet_do_min'] = "Nhiệt độ tối thiểu phải nhỏ hơn nhiệt độ tối đa."        
         if self.do_am_min >= self.do_am_max:
-            raise ValidationError('Độ ẩm tối thiểu phải nhỏ hơn độ ẩm tối đa')
-    
+            errors['do_am_min'] = "Độ ẩm tối thiểu phải nhỏ hơn độ ẩm tối đa."    
+
+        if errors:
+            raise ValidationError(errors)
+
     @property
     def tong_vi_tri(self):
         """Tổng số vị trí trong khu vực"""

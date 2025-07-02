@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from ..models import KiemKe
+from apps.core.utils.validators import ModelCleanMixin
 
-class KiemKeSerializer(serializers.ModelSerializer):
+class KiemKeSerializer(ModelCleanMixin, serializers.ModelSerializer):
     class Meta:
         model = KiemKe
         fields = '__all__'

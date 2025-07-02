@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from ..models import NhomHang
+from apps.core.utils.validators import ModelCleanMixin
 
-class NhomHangSerializer(serializers.ModelSerializer):
+class NhomHangSerializer(ModelCleanMixin, serializers.ModelSerializer):
     class Meta:
         model = NhomHang
         fields = '__all__'

@@ -1,8 +1,6 @@
 from django.db import models
-from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
-from django.utils import timezone
-from datetime import datetime, timedelta
+
 
 class TinhTrangHang(models.Model):
     pallet = models.ForeignKey('warehouse.Pallet', models.PROTECT)
@@ -12,25 +10,25 @@ class TinhTrangHang(models.Model):
         ('Cần_kiểm_tra_CL', 'Cần kiểm tra CL'),
         ('Có_vấn_đề', 'Có vấn đề'),
         ('Ưu_tiên_xuất', 'Ưu tiên xuất')
-    ], null=False)
+    ])
     muc_do = models.CharField(max_length=20, choices=[
         ('Thấp', 'Thấp'),
         ('Vừa', 'Vừa'),
         ('Cao', 'Cao'),
         ('Khẩn_cấp', 'Khẩn cấp')
     ], default='Vừa')
-    mo_ta = models.TextField(null=False, default='')
-    ngay_phat_hien = models.DateField(null=False)
+    mo_ta = models.TextField(default='', blank=True,)
+    ngay_phat_hien = models.DateField()
     ngay_xu_ly = models.DateField(blank=True, null=True)
-    nguoi_phat_hien = models.CharField(max_length=50, null=False, default='')
-    nguoi_xu_ly = models.CharField(max_length=50, null=False, default='')
+    nguoi_phat_hien = models.CharField(max_length=50, default='', blank=True,)
+    nguoi_xu_ly = models.CharField(max_length=50, default='', blank=True,)
     trang_thai = models.CharField(max_length=10, choices=[
         ('Mới', 'Mới'),
         ('Đang_xử_lý', 'Đang xử lý'),
         ('Hoàn_thành', 'Hoàn thành'),
         ('Hủy', 'Hủy')
     ], default='Mới')
-    ghi_chu = models.TextField(null=False, default='')
+    ghi_chu = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -42,3 +40,12 @@ class TinhTrangHang(models.Model):
 
     def __str__(self):
         return f"{self.pallet.ma_pallet} - {self.loai_tinh_trang} ({self.muc_do})"
+    
+    def clean(self):
+        """Validate model"""
+        errors = {}
+        if self.ngay_xu_ly > self.ngay_phat_hien:
+            errors['ngay_xu_ly'] = "Ngày xử lý phải sau ngày phát hiện"
+
+        if errors:
+            raise ValidationError(errors)

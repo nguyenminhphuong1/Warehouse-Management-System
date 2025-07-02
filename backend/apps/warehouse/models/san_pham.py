@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from datetime import timedelta
+from django.utils import timezone
 
 class SanPham(models.Model):
     TRANG_THAI_CHOICES = [
@@ -12,80 +13,80 @@ class SanPham(models.Model):
     ma_san_pham = models.CharField(
         unique=True, 
         max_length=50,
-        null=False
-        )
+    )
     
     ten_san_pham = models.CharField(
         max_length=100,
-        null=False
-        )
+    )
     
     nhom_hang = models.ForeignKey(
         'warehouse.NhomHang', 
         models.PROTECT,
-        )
+    )
     
     thuong_hieu = models.CharField(
         max_length=100,  
-        null=False,
+        blank=True,
         default=''
-        )
+    )
     
     dung_tich = models.DecimalField(
         max_digits=10, 
         decimal_places=2, 
         null=True, 
         blank=True
-        )
+    )
     
     don_vi_tinh = models.CharField(
         max_length=20, 
-        null=False,
+        blank=True,
         default='thùng'
-        )
+    )
     
     so_luong_per_thung = models.IntegerField(
-        null=False,
-        default=1
-        )
+        default=1,
+        blank=True,
+    )
     
     ma_vach = models.CharField(
         max_length=100,  
-        null=False,
-        default=''
-        )
+        default='',
+        blank=True,
+    )
     
     nha_cung_cap = models.ForeignKey(
         'warehouse.NhaCungCap', 
         models.PROTECT
-        )
+    )
     
     han_su_dung_mac_dinh = models.IntegerField( 
         null=True,
+        blank=True,
         default=365
-        )
+    )
     
     chu_ky_kiem_tra_cl = models.IntegerField(
         null=True,
+        blank=True,
         default=30
-        )
+    )
     
     hinh_anh = models.CharField(
         max_length=255, 
-        null=False,
+        blank=True,
         default=''
-        )
+    )
     
     mo_ta = models.TextField(
-        null=False,
-        default=''
-        )
+        default='',
+        blank=True,
+    )
     
     trang_thai = models.CharField(
         max_length=20, 
         choices=TRANG_THAI_CHOICES, 
         default='Hoạt_động'
-        )
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -100,9 +101,10 @@ class SanPham(models.Model):
         return f"{self.ma_san_pham} - {self.ten_san_pham}"
 
     def save(self, *args, **kwargs):
-        # Tự động tính ngày kiểm tra CL nếu chưa có
-        if not self.ngay_kiem_tra_cl:
+        if not self.chu_ky_kiem_tra_cl:
             cycle_days = self.san_pham.chu_ky_kiem_tra_cl or 30
-            self.ngay_kiem_tra_cl = self.ngay_san_xuat + timedelta(days=cycle_days)
+            self.chu_ky_kiem_tra_cl = self.ngay_san_xuat + timedelta(days=cycle_days)
         
         super().save(*args, **kwargs)
+
+    

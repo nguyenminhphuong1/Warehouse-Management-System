@@ -11,6 +11,6 @@ python-dotenv
 django-filter
 channels
 drf-spectacular
+drf_yasg
 django-redis
 psycopg2-binary
-gunicorn

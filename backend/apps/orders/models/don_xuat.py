@@ -15,51 +15,48 @@ class DonXuat(models.Model):
     ma_don = models.CharField(
         unique=True, 
         max_length=20,
-        null=False
-        )
+    )
     
     cua_hang = models.ForeignKey(
         'orders.CuaHang', 
         models.PROTECT
-        )
+    )
     
     ngay_tao = models.DateField(
-        null=False,
-        default=timezone.now
+        default=timezone.now,
+        blank=True,
     )
 
     ngay_giao = models.DateField(
         blank=True, 
         null=True
-        )
+    )
     
     trang_thai = models.CharField(
         max_length=20, 
-        null=False,
         choices=TRANG_THAI_CHOICES, 
         default='Chờ_xuất'
     )
 
     qr_code_data = models.TextField(
-        null=False,
-        default=''
-        )
+        default='',
+        blank=True,
+    )
     
     da_in_qr = models.BooleanField( 
-        null=False, 
         default=False
-        )
+    )
     
     nguoi_tao = models.CharField(
-        max_length=50, 
-        null=False,
+        max_length=50,
+        blank=True, 
         default=''
-        )
+    )
     
     ghi_chu = models.TextField(
-        null=False,
-        default=''
-        )
+        default='',
+        blank=True,
+    )
     
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -70,4 +67,17 @@ class DonXuat(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.ma_don} - {self.cua_hang}"
+        return f"{self.ma_don} - {self.cua_hang.ten_cua_hang}"
+    
+    def save(self, *args, **kwargs):
+        """Override save để tự động tạo mã order"""
+        if not self.ma_don:
+            self.generate_order_code(self.cua_hang, self.ngay_giao)
+        super().save(*args, **kwargs)
+    
+
+    def generate_order_code(self, cua_hang, ngay_giao):
+        """Tạo mã đơn xuất tự động"""
+        auto_order_code = f"Order-{cua_hang}-{ngay_giao}"
+        return auto_order_code
+    

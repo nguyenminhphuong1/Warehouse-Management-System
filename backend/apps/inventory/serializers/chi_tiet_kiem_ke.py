@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from ..models import ChiTietKiemKe
+from apps.core.utils.validators import ModelCleanMixin
 
-class ChiTietKiemKeSerializer(serializers.ModelSerializer):
+class ChiTietKiemKeSerializer(ModelCleanMixin, serializers.ModelSerializer):
     class Meta:
         model = ChiTietKiemKe
         fields = '__all__'

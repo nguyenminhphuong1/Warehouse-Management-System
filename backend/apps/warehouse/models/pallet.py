@@ -4,7 +4,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import timedelta
 import qrcode
 from io import BytesIO
 from django.core.files import File
@@ -26,6 +26,7 @@ class Pallet(models.Model):
     ma_pallet = models.CharField(
         max_length=20,
         unique=True,
+        blank=True,
         help_text="Mã pallet tự động (P-YYYY-XXX)"
     )
     
@@ -66,19 +67,23 @@ class Pallet(models.Model):
     
     # Thông tin thời gian
     ngay_san_xuat = models.DateField(
+        blank=True,
         help_text="Ngày sản xuất hàng hóa"
     )
     
     han_su_dung = models.DateField(
+        blank=True,
         help_text="Hạn sử dụng"
     )
     
     ngay_nhap_kho = models.DateTimeField(
+        blank=True,
         auto_now_add=True,
         help_text="Ngày nhập kho"
     )
     
     ngay_kiem_tra_cl = models.DateField(
+        blank=True,
         help_text="Ngày kiểm tra chất lượng tiếp theo"
     )
     
@@ -88,6 +93,7 @@ class Pallet(models.Model):
         decimal_places=2,
         default=0,
         validators=[MinValueValidator(0)],
+        blank=True,
         help_text="Trọng lượng mỗi thùng (kg)"
     )
     
@@ -95,6 +101,7 @@ class Pallet(models.Model):
         max_digits=8,
         decimal_places=2,
         default=0,
+        blank=True,
         validators=[MinValueValidator(0)],
         help_text="Chiều cao pallet (cm)"
     )
@@ -103,6 +110,7 @@ class Pallet(models.Model):
         max_digits=8,
         decimal_places=2,
         default=120,
+        blank=True,
         validators=[MinValueValidator(0)],
         help_text="Chiều dài pallet (cm)"
     )
@@ -111,6 +119,7 @@ class Pallet(models.Model):
         max_digits=8,
         decimal_places=2,
         default=80,
+        blank=True,
         validators=[MinValueValidator(0)],
         help_text="Chiều rộng pallet (cm)"
     )
@@ -162,6 +171,7 @@ class Pallet(models.Model):
     
     # Người tạo và ghi chú
     nguoi_tao = models.CharField(
+        blank=True,
         max_length=50,
         help_text="Người tạo pallet"
     )
@@ -201,34 +211,33 @@ class Pallet(models.Model):
         if not self.ngay_kiem_tra_cl:
             cycle_days = self.san_pham.chu_ky_kiem_tra_cl or 30
             self.ngay_kiem_tra_cl = self.ngay_san_xuat + timedelta(days=cycle_days)
-        
-        super().save(*args, **kwargs)
-        
-        # Tạo QR code nếu chưa có
-        if not self.qr_code:
-            self.generate_qr_code()
-    
-    def clean(self):
-        """Validate model"""
-        super().clean()
-        
-        # Kiểm tra số thùng còn lại không vượt quá ban đầu
-        if self.so_thung_con_lai > self.so_thung_ban_dau:
-            raise ValidationError('Số thùng còn lại không được vượt quá số thùng ban đầu')
-        
-        # Kiểm tra ngày sản xuất không được trong tương lai
-        if self.ngay_san_xuat > timezone.now().date():
-            raise ValidationError('Ngày sản xuất không được ở tương lai')
-        
-        # Kiểm tra hạn sử dụng phải sau ngày sản xuất
-        if self.han_su_dung <= self.ngay_san_xuat:
-            raise ValidationError('Hạn sử dụng phải sau ngày sản xuất')
-        
+
         # Tự động cập nhật trạng thái dựa trên số thùng
         if self.so_thung_con_lai == 0:
             self.trang_thai = 'Trống'
         elif self.so_thung_con_lai < self.so_thung_ban_dau and self.trang_thai == 'Mới':
             self.trang_thai = 'Đã_mở'
+        
+        super().save(*args, **kwargs)
+    
+    def clean(self):
+        """Validate model"""
+        errors = {}
+
+        # Kiểm tra số thùng còn lại không vượt quá ban đầu
+        if self.so_thung_con_lai > self.so_thung_ban_dau:
+            errors['so_thung_con_lai'] = "Số thùng còn lại không được lớn hơn số thùng ban đầu." 
+
+        # Kiểm tra ngày sản xuất không được trong tương lai
+        if self.ngay_san_xuat > timezone.now().date():
+            errors['ngay_san_xuat'] = "Ngày sản xuất không được ở tương lai." 
+
+        # Kiểm tra hạn sử dụng phải sau ngày sản xuất
+        if self.han_su_dung <= self.ngay_san_xuat:
+            errors['han_su_dung'] = "Hạn sử dụng không thể là ngày trước ngày sản xuất." 
+
+        if errors:
+            raise ValidationError(errors)
     
     @classmethod
     def generate_pallet_code(cls):
@@ -356,25 +365,11 @@ class Pallet(models.Model):
         return days_since_production
     
     # Methods
-    def can_export(self, so_luong):
-        """Kiểm tra có thể xuất số lượng này không"""
-        if self.trang_thai in ['Trống', 'Hỏng']:
-            return False, f"Pallet đang ở trạng thái {self.get_trang_thai_display()}"
-        
-        if so_luong > self.so_thung_con_lai:
-            return False, f"Không đủ hàng (còn {self.so_thung_con_lai} thùng)"
-        
-        if self.is_het_han:
-            return False, "Hàng đã hết hạn sử dụng"
-        
-        return True, "OK"
-    
     def export_quantity(self, so_luong, don_xuat=None, nguoi_xuat=None):
         """Xuất số lượng từ pallet"""
-        can_export, reason = self.can_export(so_luong)
-        if not can_export:
-            raise ValidationError(reason)
-        
+        if so_luong > self.so_thung_con_lai:
+            raise ValueError(f"Không thể xuất {so_luong} thùng vì chỉ còn {self.so_thung_con_lai}.")
+
         # Cập nhật số lượng
         self.so_thung_con_lai -= so_luong
         
@@ -387,9 +382,9 @@ class Pallet(models.Model):
         self.save()
         
         # Ghi log
-        from orders.models import LichSuXuatNhap
+        from apps.orders.models import LichSuXuatNhap
         LichSuXuatNhap.objects.create(
-            pallet=self,
+            pallets=self,
             loai_giao_dich='Xuất',
             so_luong=so_luong,
             don_xuat=don_xuat,
@@ -398,6 +393,31 @@ class Pallet(models.Model):
         )
         
         return True
+    
+    def import_quantity(self, so_luong, don_xuat=None, nguoi_xuat=None):
+        """Xuất số lượng từ pallet"""
+        
+        # Cập nhật số lượng
+        self.so_thung_con_lai += so_luong
+        
+        if self.trang_thai == 'Trống':
+            self.trang_thai = 'Đã_mở'
+        self.save()
+        
+        # Ghi log
+        from apps.orders.models import LichSuXuatNhap
+        LichSuXuatNhap.objects.create(
+            pallets=self,
+            loai_giao_dich='Nhập',
+            so_luong=so_luong,
+            don_xuat=don_xuat,
+            nguoi_thuc_hien=nguoi_xuat,
+            ghi_chu=f'Nhập {so_luong} thùng - còn {self.so_thung_con_lai}/{self.so_thung_ban_dau}'
+        )
+        
+        return True
+    
+
     
     def move_to_position(self, vi_tri_moi, nguoi_thuc_hien=None):
         """Di chuyển pallet đến vị trí mới"""
@@ -430,9 +450,9 @@ class Pallet(models.Model):
         self.save()
         
         # Ghi log
-        from orders.models import LichSuXuatNhap
+        from apps.orders.models import LichSuXuatNhap
         LichSuXuatNhap.objects.create(
-            pallet=self,
+            pallets=self,
             loai_giao_dich='Di_chuyển',
             so_luong=self.so_thung_con_lai,
             nguoi_thuc_hien=nguoi_thuc_hien,
@@ -453,7 +473,7 @@ class Pallet(models.Model):
         # Tạo bản ghi kiểm tra chất lượng
         from apps.inventory.models.tinh_trang_hang import TinhTrangHang
         TinhTrangHang.objects.create(
-            pallet=self,
+            pallets=self,
             loai_tinh_trang='Cần_kiểm_tra_CL',
             muc_do='Vừa',
             mo_ta=ket_qua,
