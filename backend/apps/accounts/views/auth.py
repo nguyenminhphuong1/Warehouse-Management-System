@@ -63,22 +63,23 @@ class LoginView(APIView):
                     user_agent=get_user_agent(request)
                 )
                 
-                # Chuẩn bị response data
                 response_data = {
                     'access_token': str(access_token),
                     'refresh_token': str(refresh),
                     'token_type': 'Bearer',
                     'expires_in': int(access_token.lifetime.total_seconds()),
-                    'user': UserProfileSerializer(user, context={'request': request}).data,
+                    'user': user,  
                     'permissions': permissions_data
                 }
-                
+
                 return Response(
-                    TokenResponseSerializer(response_data).data,
+                    TokenResponseSerializer(response_data, context={'request': request}).data,
                     status=status.HTTP_200_OK
                 )
                 
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 # Log failed login
                 PermissionAuditLog.log_login_attempt(
                     user=user,
@@ -89,9 +90,9 @@ class LoginView(APIView):
                 )
                 
                 return Response(
-                    {'error': 'Đã xảy ra lỗi trong quá trình đăng nhập.'},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
+            {'error': str(e)},  # 👈 In lỗi thật ra thay vì ẩn
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
         
         else:
             # Log failed login attempt với username nếu có

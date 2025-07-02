@@ -317,3 +317,64 @@ class Role(models.Model):
             'created_at': self.created_at,
             'created_by': self.created_by.get_full_name() if self.created_by else None
         }
+    
+    def get_full_permissions(self):
+        """Get complete permission tree including inherited permissions"""
+        permissions = {}
+        
+        # Get direct permissions
+        for perm in self.permissions.filter(is_granted=True):
+            if perm.module not in permissions:
+                permissions[perm.module] = []
+                
+            if perm.action == 'full_access':
+                permissions[perm.module] = ['full_access']
+                continue
+                
+            if perm.action not in permissions[perm.module]:
+                permissions[perm.module].append(perm.action)
+                
+        return permissions
+    
+    def grant_permission(self, module, action, **kwargs):
+        """Grant a permission to this role"""
+        from apps.accounts.models.permission import ModulePermission
+        
+        permission, created = ModulePermission.objects.get_or_create(
+            role=self,
+            module=module,
+            action=action,
+            defaults={
+                'is_granted': True,
+                **kwargs
+            }
+        )
+        
+        if not created:
+            permission.is_granted = True
+            for key, value in kwargs.items():
+                setattr(permission, key, value)
+            permission.save()
+            
+        return permission
+    
+    def revoke_permission(self, module, action):
+        """Revoke a specific permission"""
+        self.permissions.filter(
+            module=module,
+            action=action
+        ).update(is_granted=False)
+    
+    def set_permissions(self, permissions_dict):
+        """Set multiple permissions at once
+        Format: {
+            'module_name': ['action1', 'action2']
+        }
+        """
+        # Clear existing permissions
+        self.permissions.all().delete()
+        
+        # Add new permissions
+        for module, actions in permissions_dict.items():
+            for action in actions:
+                self.grant_permission(module, action)
