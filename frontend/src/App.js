@@ -6,6 +6,7 @@ import './App.css';
 import { AuthProvider } from './context/AuthContext';
 import LoginForm from './components/auth/LoginForm';
 import './styles/auth.css';
+import { useAuth } from './context/AuthContext';
 
 // Import Common Components và Styles
 import './components/common/styles.css';
@@ -28,30 +29,7 @@ import {
 import XuatHang from './pages/XuatHang/XuatHang';
 import NhapHang from './pages/NhapHang/NhapHang';
 // Temporary Context Providers (tạm thời)
-// const AuthContext = React.createContext();
-// const AuthProvider = ({ children }) => {
-//   const [user, setUser] = useState({
-//     id: 1,
-//     name: 'Admin User',
-//     email: 'admin@warehouse.com',
-//     role: 'admin'
-//   });
-//   const [loading, setLoading] = useState(false);
-//
-//   return (
-//     <AuthContext.Provider value={{ user, loading, setUser }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
 
-// const useAuth = () => {
-//   const context = React.useContext(AuthContext);
-//   if (!context) {
-//     throw new Error('useAuth must be used within AuthProvider');
-//   }
-//   return context;
-// };
 
 // Temporary Context Providers
 const WarehouseProvider = ({ children }) => children;
@@ -60,11 +38,19 @@ const SettingsProvider = ({ children }) => children;
 const PermissionProvider = ({ children }) => children;
 
 // Temporary ProtectedRoute
-const ProtectedRoute = ({ children, module, action }) => {
-  // Tạm thời cho phép tất cả
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return children;
 };
-
 // Temporary page components
 const Dashboard = () => (
   <div style={{ padding: '20px' }}>
