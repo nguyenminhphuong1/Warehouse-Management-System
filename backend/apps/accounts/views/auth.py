@@ -141,50 +141,43 @@ class LogoutView(APIView):
     API đăng xuất
     """
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def post(self, request):
-        serializer = LogoutSerializer(data=request.data)
-        
-        if serializer.is_valid():
-            user = request.user
-            logout_all = serializer.validated_data.get('logout_all_devices', False)
-            refresh_token = serializer.validated_data.get('refresh_token')
-            
-            try:
-                if logout_all:
-                    # Đăng xuất tất cả thiết bị bằng cách thay đổi user's secret
-                    user.is_active_session = False
-                    user.save(update_fields=['is_active_session'])
-                    
-                elif refresh_token:
-                    # Blacklist refresh token cụ thể
+        try:
+            refresh_token = request.data.get('refresh_token')
+            logout_all = request.data.get('logout_all_devices', False)
+
+            if logout_all:
+                # Logout from all devices
+                request.user.is_active_session = False
+                request.user.save(update_fields=['is_active_session'])
+            elif refresh_token:
+                # Blacklist single refresh token
+                try:
                     token = RefreshToken(refresh_token)
                     token.blacklist()
-                
-                # Log logout
-                PermissionAuditLog.log_permission_change(
-                    user=user,
-                    action_type='logout',
-                    success=True,
-                    ip_address=get_client_ip(request),
-                    user_agent=get_user_agent(request)
-                )
-                
-                return Response(
-                    {'message': 'Đăng xuất thành công.'},
-                    status=status.HTTP_200_OK
-                )
-                
-            except TokenError as e:
-                return Response(
-                    {'error': 'Token không hợp lệ.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+                except TokenError:
+                    return Response(
+                        {'error': 'Invalid token.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # Log logout action
+            PermissionAuditLog.log_permission_change(
+                user=request.user,
+                action_type='logout',
+                success=True,
+                ip_address=get_client_ip(request),
+                user_agent=get_user_agent(request)
+            )
+
+            return Response({'message': 'Đăng xuất thành công.'})
+
+        except Exception as e:
+            return Response(
+                {'error': 'Đã xảy ra lỗi trong quá trình đăng xuất.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class RefreshTokenView(APIView):
     """
@@ -239,42 +232,64 @@ class ChangePasswordView(APIView):
     API đổi mật khẩu
     """
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def post(self, request):
-        serializer = ChangePasswordSerializer(
-            data=request.data,
-            context={'request': request}
-        )
-        
+        serializer = LoginSerializer(data=request.data, context={'request': request})
+
         if serializer.is_valid():
-            user = request.user
-            new_password = serializer.validated_data['new_password']
-            
-            # Cập nhật mật khẩu
-            user.set_password(new_password)
-            user.password_changed_at = timezone.now()
-            user.must_change_password = False
-            user.save(update_fields=['password', 'password_changed_at', 'must_change_password'])
-            
-            # Log password change
-            PermissionAuditLog.log_permission_change(
-                user=user,
-                action_type='change_password',
-                success=True,
-                ip_address=get_client_ip(request),
-                user_agent=get_user_agent(request),
-                notes='User changed their own password'
-            )
-            
-            return Response(
-                {'message': 'Đổi mật khẩu thành công.'},
-                status=status.HTTP_200_OK
-            )
-        
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+            user = serializer.validated_data['user']
+            remember_me = serializer.validated_data.get('remember_me', False)
+
+            try:
+                # Reset số lần đăng nhập thất bại
+                user.reset_failed_login()
+
+                # Cập nhật thông tin đăng nhập
+                user.update_last_activity()
+                user.is_active_session = True
+                user.save(update_fields=['is_active_session'])
+
+                # Tạo JWT tokens
+                refresh = RefreshToken.for_user(user)
+                access_token = refresh.access_token
+
+                # Cấu hình thời gian token dựa vào remember_me
+                if remember_me:
+                    refresh.set_exp(lifetime=timezone.timedelta(days=30))
+                    access_token.set_exp(lifetime=timezone.timedelta(hours=24))
+                else:
+                    refresh.set_exp(lifetime=timezone.timedelta(days=7))
+                    access_token.set_exp(lifetime=timezone.timedelta(hours=8))
+
+                # Lấy thông tin permissions
+                permissions_data = self._get_user_permissions(user)
+
+                # Log successful login
+                PermissionAuditLog.log_login_attempt(
+                    user=user,
+                    success=True,
+                    ip_address=get_client_ip(request),
+                    user_agent=get_user_agent(request)
+                )
+
+                response_data = {
+                    'access_token': str(access_token),
+                    'refresh_token': str(refresh),
+                    'token_type': 'Bearer',
+                    'expires_in': int(access_token.lifetime.total_seconds()),
+                    'user': UserProfileSerializer(user, context={'request': request}).data,
+                    'permissions': permissions_data
+                }
+
+                return Response(TokenResponseSerializer(response_data).data)
+
+            except Exception as e:
+                return Response(
+                    {'error': 'Đã xảy ra lỗi trong quá trình đăng nhập.'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileView(APIView):
     """
