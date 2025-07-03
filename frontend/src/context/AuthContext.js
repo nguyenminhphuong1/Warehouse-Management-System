@@ -1,99 +1,72 @@
 // src/context/AuthContext.js
-import { createContext, useState, useContext, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import api from '../services/api';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
-    checkAuth();
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        const userData = JSON.parse(jsonPayload);
+        setUser(userData);
+      } catch (error) {
+        console.error('Error parsing token:', error);
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+      }
+    }
+    setLoading(false);
   }, []);
 
-  const checkAuth = async () => {
+ const login = async (username, password, remember) => {
     try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        setLoading(false);
-        // Nếu đang ở route protected, redirect về login
-        if (!location.pathname.startsWith('/login')) {
-          navigate('/login', {
-            state: { from: location },
-            replace: true
-          });
-        }
-        return;
+      const response = await fetch('http://localhost:8001/api/token/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Đăng nhập không thành công');
       }
 
-      const response = await api.get('/auth/session-info/');
-      setUser(response.data);
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const login = async (credentials) => {
-    try {
-      const response = await api.post('/auth/login/', credentials);
-      const { access_token, refresh_token, user: userData } = response.data;
-
-      // Save tokens
-      localStorage.setItem('access_token', access_token);
-      if (credentials.remember_me) {
-        localStorage.setItem('refresh_token', refresh_token);
-      } else {
-        sessionStorage.setItem('refresh_token', refresh_token);
+      const data = await response.json();
+      localStorage.setItem('access_token', data.access);
+      if (remember) {
+        localStorage.setItem('refresh_token', data.refresh);
       }
-
-      setUser(userData);
+      setUser(data.user);
       return { success: true };
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.error || 'Đăng nhập thất bại'
-      };
+      return { success: false, error: error.message };
     }
+};
+
+  const logout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('remember_me');
+    setUser(null);
+    navigate('/login');
   };
-
-  const logout = async () => {
-    try {
-      const refresh_token = localStorage.getItem('refresh_token') ||
-                          sessionStorage.getItem('refresh_token');
-
-      if (refresh_token) {
-        await api.post('/auth/logout/', { refresh_token });
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      sessionStorage.removeItem('refresh_token');
-      setUser(null);
-      navigate('/login');
-    }
-  };
-
-  if (loading) {
-    return <div>Loading...</div>; // Hoặc component loading của bạn
-  }
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      login,
-      logout,
-      loading,
-      checkAuth
-    }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

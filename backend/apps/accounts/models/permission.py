@@ -473,7 +473,9 @@ class PermissionAuditLog(models.Model):
             success=success,
             error_message=error_message,
             ip_address=ip_address,
-            user_agent=user_agent
+            user_agent=user_agent,
+            module = 'auth',
+            action='login_attempt'
         )
     
     @classmethod
