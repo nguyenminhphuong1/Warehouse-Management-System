@@ -57,145 +57,145 @@ const QuanLyKho = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Mock data
-      const mockData = {
-        locations: [
-          {
-            id: 'L001',
-            code: 'A-01-01',
-            zone: 'A',
-            aisle: '01',
-            rack: '01',
-            level: 1,
-            type: 'standard',
-            status: 'occupied',
-            capacity: 100,
-            currentLoad: 85,
-            lastUpdated: '2025-01-15T10:30:00Z',
-            maintenanceStatus: 'good'
-          },
-          {
-            id: 'L002',
-            code: 'A-01-02',
-            zone: 'A',
-            aisle: '01',
-            rack: '02',
-            level: 1,
-            type: 'standard',
-            status: 'available',
-            capacity: 100,
-            currentLoad: 0,
-            lastUpdated: '2025-01-15T09:15:00Z',
-            maintenanceStatus: 'good'
-          },
-          {
-            id: 'L003',
-            code: 'B-02-01',
-            zone: 'B',
-            aisle: '02',
-            rack: '01',
-            level: 2,
-            type: 'heavy',
-            status: 'maintenance',
-            capacity: 200,
-            currentLoad: 0,
-            lastUpdated: '2025-01-14T14:20:00Z',
-            maintenanceStatus: 'requires_attention'
-          }
-        ],
-        products: [
-          {
-            id: 'P001',
-            sku: 'SKU001',
-            name: 'Sản phẩm A',
-            category: 'Electronics',
-            unit: 'Thùng',
-            minStock: 50,
-            maxStock: 500,
-            currentStock: 25,
-            reservedStock: 10,
-            availableStock: 15,
-            lastRestocked: '2025-01-10',
-            expiryDate: '2025-06-15',
-            supplier: 'Nhà cung cấp 1',
-            cost: 150000,
-            status: 'low_stock'
-          },
-          {
-            id: 'P002',
-            sku: 'SKU002',
-            name: 'Sản phẩm B',
-            category: 'Food',
-            unit: 'Thùng',
-            minStock: 30,
-            maxStock: 300,
-            currentStock: 120,
-            reservedStock: 20,
-            availableStock: 100,
-            lastRestocked: '2025-01-12',
-            expiryDate: '2025-03-20',
-            supplier: 'Nhà cung cấp 2',
-            cost: 80000,
-            status: 'in_stock'
-          }
-        ],
-        maintenance: [
-          {
-            id: 'M001',
-            locationId: 'L003',
-            locationCode: 'B-02-01',
-            type: 'preventive',
-            priority: 'high',
-            status: 'pending',
-            description: 'Kiểm tra và bảo trì kệ hàng',
-            scheduledDate: '2025-01-16',
-            estimatedDuration: 120,
-            assignedTo: 'Nguyễn Văn A',
-            equipment: ['Kệ hàng', 'Hệ thống nâng'],
-            notes: 'Phát hiện tiếng kêu bất thường'
-          },
-          {
-            id: 'M002',
-            locationId: 'L001',
-            locationCode: 'A-01-01',
-            type: 'corrective',
-            priority: 'medium',
-            status: 'completed',
-            description: 'Thay thế đèn LED',
-            scheduledDate: '2025-01-14',
-            completedDate: '2025-01-14',
-            estimatedDuration: 30,
-            actualDuration: 25,
-            assignedTo: 'Trần Văn B',
-            equipment: ['Đèn LED'],
-            notes: 'Hoàn thành thành công'
-          }
-        ],
-        inspections: [
-          {
-            id: 'I001',
-            type: 'inventory_count',
-            status: 'pending',
-            scheduledDate: '2025-01-16',
-            zones: ['A', 'B'],
-            assignedTo: ['Nguyễn Thị C', 'Lê Văn D'],
-            estimatedDuration: 480,
-            description: 'Kiểm kê định kỳ tháng 1'
-          },
-          {
-            id: 'I002',
-            type: 'quality_check',
-            status: 'in_progress',
-            scheduledDate: '2025-01-15',
-            startedDate: '2025-01-15T08:00:00Z',
-            zones: ['C'],
-            assignedTo: ['Phạm Văn E'],
-            estimatedDuration: 240,
-            description: 'Kiểm tra chất lượng hàng thực phẩm',
-            progress: 65
-          }
-        ]
-      };
+      // // Mock data
+      // const mockData = {
+      //   locations: [
+      //     {
+      //       id: 'L001',
+      //       code: 'A-01-01',
+      //       zone: 'A',
+      //       aisle: '01',
+      //       rack: '01',
+      //       level: 1,
+      //       type: 'standard',
+      //       status: 'occupied',
+      //       capacity: 100,
+      //       currentLoad: 85,
+      //       lastUpdated: '2025-01-15T10:30:00Z',
+      //       maintenanceStatus: 'good'
+      //     },
+      //     {
+      //       id: 'L002',
+      //       code: 'A-01-02',
+      //       zone: 'A',
+      //       aisle: '01',
+      //       rack: '02',
+      //       level: 1,
+      //       type: 'standard',
+      //       status: 'available',
+      //       capacity: 100,
+      //       currentLoad: 0,
+      //       lastUpdated: '2025-01-15T09:15:00Z',
+      //       maintenanceStatus: 'good'
+      //     },
+      //     {
+      //       id: 'L003',
+      //       code: 'B-02-01',
+      //       zone: 'B',
+      //       aisle: '02',
+      //       rack: '01',
+      //       level: 2,
+      //       type: 'heavy',
+      //       status: 'maintenance',
+      //       capacity: 200,
+      //       currentLoad: 0,
+      //       lastUpdated: '2025-01-14T14:20:00Z',
+      //       maintenanceStatus: 'requires_attention'
+      //     }
+      //   ],
+      //   products: [
+      //     {
+      //       id: 'P001',
+      //       sku: 'SKU001',
+      //       name: 'Sản phẩm A',
+      //       category: 'Electronics',
+      //       unit: 'Thùng',
+      //       minStock: 50,
+      //       maxStock: 500,
+      //       currentStock: 25,
+      //       reservedStock: 10,
+      //       availableStock: 15,
+      //       lastRestocked: '2025-01-10',
+      //       expiryDate: '2025-06-15',
+      //       supplier: 'Nhà cung cấp 1',
+      //       cost: 150000,
+      //       status: 'low_stock'
+      //     },
+      //     {
+      //       id: 'P002',
+      //       sku: 'SKU002',
+      //       name: 'Sản phẩm B',
+      //       category: 'Food',
+      //       unit: 'Thùng',
+      //       minStock: 30,
+      //       maxStock: 300,
+      //       currentStock: 120,
+      //       reservedStock: 20,
+      //       availableStock: 100,
+      //       lastRestocked: '2025-01-12',
+      //       expiryDate: '2025-03-20',
+      //       supplier: 'Nhà cung cấp 2',
+      //       cost: 80000,
+      //       status: 'in_stock'
+      //     }
+      //   ],
+      //   maintenance: [
+      //     {
+      //       id: 'M001',
+      //       locationId: 'L003',
+      //       locationCode: 'B-02-01',
+      //       type: 'preventive',
+      //       priority: 'high',
+      //       status: 'pending',
+      //       description: 'Kiểm tra và bảo trì kệ hàng',
+      //       scheduledDate: '2025-01-16',
+      //       estimatedDuration: 120,
+      //       assignedTo: 'Nguyễn Văn A',
+      //       equipment: ['Kệ hàng', 'Hệ thống nâng'],
+      //       notes: 'Phát hiện tiếng kêu bất thường'
+      //     },
+      //     {
+      //       id: 'M002',
+      //       locationId: 'L001',
+      //       locationCode: 'A-01-01',
+      //       type: 'corrective',
+      //       priority: 'medium',
+      //       status: 'completed',
+      //       description: 'Thay thế đèn LED',
+      //       scheduledDate: '2025-01-14',
+      //       completedDate: '2025-01-14',
+      //       estimatedDuration: 30,
+      //       actualDuration: 25,
+      //       assignedTo: 'Trần Văn B',
+      //       equipment: ['Đèn LED'],
+      //       notes: 'Hoàn thành thành công'
+      //     }
+      //   ],
+      //   inspections: [
+      //     {
+      //       id: 'I001',
+      //       type: 'inventory_count',
+      //       status: 'pending',
+      //       scheduledDate: '2025-01-16',
+      //       zones: ['A', 'B'],
+      //       assignedTo: ['Nguyễn Thị C', 'Lê Văn D'],
+      //       estimatedDuration: 480,
+      //       description: 'Kiểm kê định kỳ tháng 1'
+      //     },
+      //     {
+      //       id: 'I002',
+      //       type: 'quality_check',
+      //       status: 'in_progress',
+      //       scheduledDate: '2025-01-15',
+      //       startedDate: '2025-01-15T08:00:00Z',
+      //       zones: ['C'],
+      //       assignedTo: ['Phạm Văn E'],
+      //       estimatedDuration: 240,
+      //       description: 'Kiểm tra chất lượng hàng thực phẩm',
+      //       progress: 65
+      //     }
+      //   ]
+      // };
 
       // Calculate stats
       const stats = {
@@ -269,6 +269,20 @@ const QuanLyKho = () => {
       <div className="quan-ly-kho-loading">
         <div className="loading-spinner"></div>
         <p>Đang tải dữ liệu quản lý kho...</p>
+      </div>
+    );
+  }
+
+  // Nếu không có dữ liệu thực tế, hiển thị thông báo
+  const hasData = warehouseData && warehouseData.stats && warehouseData.stats.totalLocations > 0;
+
+  if (!hasData) {
+    return (
+      <div className="quan-ly-kho-container">
+        <div className="no-data-message">
+          <h2>Chưa có dữ liệu quản lý kho</h2>
+          <p>Vui lòng nhập dữ liệu hoặc kết nối API để hiển thị thông tin.</p>
+        </div>
       </div>
     );
   }

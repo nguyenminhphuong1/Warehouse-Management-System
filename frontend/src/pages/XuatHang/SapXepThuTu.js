@@ -50,38 +50,12 @@ const SapXepThuTu = ({ orders = [] }) => {
     }
   ];
 
-  // Mock data về vị trí kho và khoảng cách
-  const mockLocationData = useMemo(() => {
-    const locations = {
-      'Hà Nội': { lat: 21.028511, lng: 105.804817, zone: 'north' },
-      'TP.HCM': { lat: 10.823099, lng: 106.629664, zone: 'south' },
-      'Đà Nẵng': { lat: 16.054407, lng: 108.202167, zone: 'central' },
-      'Hải Phòng': { lat: 20.844511, lng: 106.687817, zone: 'north' },
-      'Cần Thơ': { lat: 10.045162, lng: 105.746857, zone: 'south' }
-    };
-
-    return orders.map(order => {
-      const city = order.storeAddress.includes('Hà Nội') ? 'Hà Nội' :
-                   order.storeAddress.includes('TP.HCM') ? 'TP.HCM' :
-                   order.storeAddress.includes('Đà Nẵng') ? 'Đà Nẵng' :
-                   order.storeAddress.includes('Hải Phòng') ? 'Hải Phòng' : 'Cần Thơ';
-      
-      return {
-        ...order,
-        location: locations[city],
-        estimatedDistance: Math.floor(Math.random() * 500) + 50, // km
-        estimatedTime: Math.floor(Math.random() * 180) + 60, // minutes
-        warehouseLocation: `${String.fromCharCode(65 + Math.floor(Math.random() * 5))}-${String(Math.floor(Math.random() * 20) + 1).padStart(2, '0')}`
-      };
-    });
-  }, [orders]);
-
   useEffect(() => {
-    setSelectedOrders(mockLocationData.map(order => order.id));
-    applySorting(sortingMethod, mockLocationData);
-  }, [mockLocationData, sortingMethod]);
+    setSelectedOrders(orders.map(order => order.id));
+    applySorting(sortingMethod, orders);
+  }, [orders, sortingMethod]);
 
-  const applySorting = (method, ordersToSort = mockLocationData) => {
+  const applySorting = (method, ordersToSort = orders) => {
     let sorted = [...ordersToSort];
 
     switch (method) {

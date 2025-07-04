@@ -364,8 +364,8 @@ export const warehouseNavigation = [
         path: '/ton-kho',
         label: 'Tồn kho',
         icon: '📋',
-        activePattern: '^/ton-kho',
-        badge: { count: 12, type: 'warning' }
+        activePattern: '^/ton-kho'
+        
       }
     ]
   },
@@ -384,8 +384,8 @@ export const warehouseNavigation = [
         path: '/danh-sach-don',
         label: 'Danh sách đơn',
         icon: '📋',
-        activePattern: '^/danh-sach-don',
-        badge: { count: 5, type: 'info' }
+        activePattern: '^/danh-sach-don'
+        
       },
       {
         path: '/don-hoan-thanh',

@@ -3,24 +3,26 @@
 import React, { useState, useEffect } from 'react';
 import LocationSelector from '../../components/warehouse/LocationSelector';
 import './ThemPallet.css';
+import api from '../../services/api';
 
-const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, loading }) => {
+const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
   const [formData, setFormData] = useState({
-    san_pham: '',
-    nha_cung_cap: '',
+    san_pham: null, // Lưu object sản phẩm
+    nha_cung_cap: null, // Lưu object nhà cung cấp
     so_thung_ban_dau: '',
+    so_thung_con_lai: '',
     ngay_san_xuat: '',
     han_su_dung: '',
     ngay_kiem_tra_cl: '',
     lo_san_xuat: '',
     so_phieu_nhap: '',
     trong_luong_thung: '',
-    chieu_cao: '150',
-    chieu_dai: '120',
-    chieu_rong: '80',
+    chieu_cao: '',
+    chieu_dai: '',
+    chieu_rong: '',
     nhiet_do_bao_quan: '',
     do_am_bao_quan: '',
-    vi_tri_kho: null,
+    vi_tri_kho: null, // Lưu object vị trí kho
     ghi_chu: '',
     nguoi_tao: 'admin' // Will be replaced with actual user
   });
@@ -33,6 +35,20 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
     total_volume: 0,
     days_until_expiry: 0
   });
+
+  const [suppliers, setSuppliers] = useState([]);
+  const [suppliersLoading, setSuppliersLoading] = useState(false);
+  const [suppliersError, setSuppliersError] = useState('');
+
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsError, setProductsError] = useState('');
+
+  const [availableLocations, setAvailableLocations] = useState([]);
+  const [locationsLoading, setLocationsLoading] = useState(false);
+  const [locationsError, setLocationsError] = useState('');
+
+  const [apiError, setApiError] = useState('');
 
   // Auto-calculate values when form data changes
   useEffect(() => {
@@ -83,29 +99,79 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
     }
   }, [formData.ngay_san_xuat, selectedProduct]);
 
+  // Fetch suppliers from API when dropdown is focused
+  const handleSupplierDropdownFocus = () => {
+    if (suppliers.length === 0 && !suppliersLoading) {
+      setSuppliersLoading(true);
+      setSuppliersError('');
+      console.log('Fetching suppliers...');
+      api.get('/api/warehouse/nhacungcap/')
+        .then(res => {
+          const data = res.data;
+          console.log('Suppliers data:', suppliers);
+          setSuppliers(Array.isArray(data) ? data : (data.results || []));
+          setSuppliersLoading(false);
+        })
+        .catch((err) => {
+          setSuppliersError('Không thể tải nhà cung cấp');
+          setSuppliersLoading(false);
+          console.error('Supplier fetch error:', err);
+        });
+    }
+  };
+
+  // Fetch products from API when dropdown is focused
+  const handleProductDropdownFocus = () => {
+    if (products.length === 0 && !productsLoading) {
+      setProductsLoading(true);
+      setProductsError('');
+      console.log('Fetching products...');
+      api.get('/api/warehouse/sanpham/')
+        .then(res => {
+          const data = res.data;
+          console.log('Products data:', data);
+          setProducts(Array.isArray(data) ? data : (data.results || []));
+          setProductsLoading(false);
+        })
+        .catch((err) => {
+          setProductsError('Không thể tải sản phẩm');
+          setProductsLoading(false);
+          console.error('Product fetch error:', err);
+        });
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      if (name === 'san_pham') {
+        const product = products.find(p => String(p.id) === value);
+        setSelectedProduct(product);
+        // Auto-fill product-related fields
+        if (product) {
+          return {
+            ...prev,
+            san_pham: product,
+            trong_luong_thung: product.trong_luong_thung || '',
+            nhiet_do_bao_quan: product.nhiet_do_bao_quan || '',
+            do_am_bao_quan: product.do_am_bao_quan || ''
+          };
+        }
+        return { ...prev, san_pham: null };
+      }
+      if (name === 'nha_cung_cap') {
+        const supplier = suppliers.find(s => String(s.id) === value);
+        return { ...prev, nha_cung_cap: supplier || null };
+      }
+      if (name === 'so_thung_ban_dau') {
+        return { ...prev, [name]: value, so_thung_con_lai: value };
+      }
+      return { ...prev, [name]: value };
+    });
     
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-
-    // Handle product selection
-    if (name === 'san_pham') {
-      const product = products.find(p => p.id === parseInt(value));
-      setSelectedProduct(product);
-      
-      // Auto-fill product-related fields
-      if (product) {
-        setFormData(prev => ({
-          ...prev,
-          trong_luong_thung: product.trong_luong_thung || '',
-          nhiet_do_bao_quan: product.nhiet_do_bao_quan || '',
-          do_am_bao_quan: product.do_am_bao_quan || ''
-        }));
-      }
     }
   };
 
@@ -152,34 +218,56 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setApiError('');
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // Find selected product and position details
-    const product = products.find(p => p.id === parseInt(formData.san_pham));
-    const supplier = suppliers.find(s => s.id === parseInt(formData.nha_cung_cap));
+    // Find selected product, supplier, and position details
+    const product = formData.san_pham; // Đã là object
+    const supplier = formData.nha_cung_cap; // Đã là object
+    const position = formData.vi_tri_kho; // Đã là object
 
     const palletData = {
-      ...formData,
-      san_pham: product,
-      nha_cung_cap: supplier,
+      san_pham: product ? product.id : '',
+      nha_cung_cap: supplier ? supplier.id : '',
+      vi_tri_kho: position ? position.id : '',
       so_thung_ban_dau: parseInt(formData.so_thung_ban_dau),
       so_thung_con_lai: parseInt(formData.so_thung_ban_dau),
       trong_luong_thung: parseFloat(formData.trong_luong_thung) || 0,
       chieu_cao: parseFloat(formData.chieu_cao) || 0,
-      chieu_dai: parseFloat(formData.chieu_dai) || 120,
-      chieu_rong: parseFloat(formData.chieu_rong) || 80,
+      chieu_dai: parseFloat(formData.chieu_dai) || 0,
+      chieu_rong: parseFloat(formData.chieu_rong) || 0,
       nhiet_do_bao_quan: formData.nhiet_do_bao_quan ? parseFloat(formData.nhiet_do_bao_quan) : null,
-      do_am_bao_quan: formData.do_am_bao_quan ? parseFloat(formData.do_am_bao_quan) : null
+      do_am_bao_quan: formData.do_am_bao_quan ? parseFloat(formData.do_am_bao_quan) : null,
+      ngay_san_xuat: formData.ngay_san_xuat,
+      han_su_dung: formData.han_su_dung,
+      ngay_kiem_tra_cl: formData.ngay_kiem_tra_cl,
+      lo_san_xuat: formData.lo_san_xuat,
+      so_phieu_nhap: formData.so_phieu_nhap,
+      ghi_chu: formData.ghi_chu,
+      nguoi_tao: formData.nguoi_tao,
     };
 
-    onSubmit(palletData);
+    console.log('Submitting pallet data:', palletData);
+
+    try {
+      const response = await api.post('/api/warehouse/pallet/', palletData);
+      const result = response.data;
+      console.log('Pallet created:', result);
+      onSubmit(result); // Trả về dữ liệu vừa tạo từ backend
+      // Reset form nếu muốn
+      setFormData({
+        san_pham: null, nha_cung_cap: null, so_thung_ban_dau: '', so_thung_con_lai: '', ngay_san_xuat: '', han_su_dung: '', ngay_kiem_tra_cl: '', lo_san_xuat: '', so_phieu_nhap: '', trong_luong_thung: '', chieu_cao: '', chieu_dai: '', chieu_rong: '', nhiet_do_bao_quan: '', do_am_bao_quan: '', vi_tri_kho: null, ghi_chu: '', nguoi_tao: 'admin'
+      });
+    } catch (err) {
+      setApiError(err.response?.data?.detail || 'Tạo pallet thất bại!');
+      console.error('API error:', err);
+    }
   };
 
   const handleLocationSelect = (position) => {
@@ -202,6 +290,25 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
   };
 
   const expiryWarning = getExpiryWarning();
+
+  // Fetch available locations when opening selector
+  const handleOpenLocationSelector = () => {
+    setShowLocationSelector(true);
+    if (availableLocations.length === 0 && !locationsLoading) {
+      setLocationsLoading(true);
+      setLocationsError('');
+      api.get('/api/warehouse/vitri/get_available/')
+        .then(res => {
+          const data = res.data;
+          setAvailableLocations(Array.isArray(data) ? data : (data.results || []));
+          setLocationsLoading(false);
+        })
+        .catch(() => {
+          setLocationsError('Không thể tải danh sách vị trí kho');
+          setLocationsLoading(false);
+        });
+    }
+  };
 
   return (
     <div className="them-pallet">
@@ -227,15 +334,19 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
               <select
                 id="san_pham"
                 name="san_pham"
-                value={formData.san_pham}
+                value={formData.san_pham ? formData.san_pham.id : ''}
                 onChange={handleInputChange}
+                onFocus={handleProductDropdownFocus}
+                disabled={productsLoading}
                 className={errors.san_pham ? 'error' : ''}
                 required
               >
                 <option value="">-- Chọn sản phẩm --</option>
+                {productsLoading && <option value="" disabled>Đang tải...</option>}
+                {productsError && <option value="" disabled>{productsError}</option>}
                 {products.map(product => (
                   <option key={product.id} value={product.id}>
-                    {product.ten_san_pham} ({product.ma_san_pham})
+                    {product.ten_san_pham} {product.ma_san_pham ? `(${product.ma_san_pham})` : ''}
                   </option>
                 ))}
               </select>
@@ -247,10 +358,14 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
               <select
                 id="nha_cung_cap"
                 name="nha_cung_cap"
-                value={formData.nha_cung_cap}
+                value={formData.nha_cung_cap ? formData.nha_cung_cap.id : ''}
                 onChange={handleInputChange}
+                onFocus={handleSupplierDropdownFocus}
+                disabled={suppliersLoading}
               >
                 <option value="">-- Chọn nhà cung cấp --</option>
+                {suppliersLoading && <option value="" disabled>Đang tải...</option>}
+                {suppliersError && <option value="" disabled>{suppliersError}</option>}
                 {suppliers.map(supplier => (
                   <option key={supplier.id} value={supplier.id}>
                     {supplier.ten_nha_cung_cap}
@@ -273,6 +388,17 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
                 required
               />
               {errors.so_thung_ban_dau && <span className="error-message">{errors.so_thung_ban_dau}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="so_thung_con_lai">Số thùng còn lại</label>
+              <input
+                type="number"
+                id="so_thung_con_lai"
+                name="so_thung_con_lai"
+                value={formData.so_thung_con_lai}
+                disabled
+              />
             </div>
 
             <div className="form-group">
@@ -470,7 +596,7 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => setShowLocationSelector(true)}
+              onClick={handleOpenLocationSelector}
             >
               <i className="icon-map"></i>
               {formData.vi_tri_kho ? `Đã chọn: ${formData.vi_tri_kho.ma_vi_tri}` : 'Chọn vị trí kho'}
@@ -559,7 +685,7 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
             <div className="summary-grid">
               <div className="summary-item">
                 <label>Sản phẩm:</label>
-                <span>{selectedProduct?.ten_san_pham || 'Chưa chọn'}</span>
+                <span>{selectedProduct?.id || 'Chưa chọn'}</span>
               </div>
               
               <div className="summary-item">
@@ -603,6 +729,7 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
 
         {/* Form Actions */}
         <div className="form-actions">
+          {apiError && <div className="error-message" style={{marginBottom:8}}>{apiError}</div>}
           <button
             type="button"
             className="btn btn-secondary"
@@ -635,14 +762,72 @@ const ThemPallet = ({ onSubmit, onCancel, products, suppliers, warehouseAreas, l
 
       {/* Location Selector Modal */}
       {showLocationSelector && (
-        <LocationSelector
-          areas={warehouseAreas}
-          onSelect={handleLocationSelect}
-          onClose={() => setShowLocationSelector(false)}
-          selectedProduct={selectedProduct}
-          palletWeight={calculatedValues.total_weight}
-          palletVolume={calculatedValues.total_volume}
-        />
+        <div className="location-selector-modal">
+          <div className="modal-content">
+            <h3>Chọn vị trí kho</h3>
+            {locationsLoading ? (
+              <div>Đang tải danh sách vị trí...</div>
+            ) : locationsError ? (
+              <div className="error-message">{locationsError}</div>
+            ) : (
+              <table className="location-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Mã vị trí</th>
+                    <th>Hàng</th>
+                    <th>Cột</th>
+                    <th>Loại vị trí</th>
+                    <th>Tải trọng tối đa</th>
+                    <th>Chiều cao tối đa</th>
+                    <th>Trạng thái</th>
+                    <th>Gần cửa ra</th>
+                    <th>Vị trí cách ly</th>
+                    <th>Ghi chú</th>
+                    <th>Ngày tạo</th>
+                    <th>Ngày cập nhật</th>
+                    <th>Khu vực</th>
+                    <th>Pallet</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {availableLocations.map(loc => (
+                    <tr key={loc.id || loc.ma_vi_tri}>
+                      <td>
+                        <input
+                          type="radio"
+                          name="selected_location"
+                          checked={formData.vi_tri_kho && formData.vi_tri_kho.ma_vi_tri === loc.ma_vi_tri}
+                          onChange={() => {
+                            if (window.confirm('Bạn có chắc muốn chọn vị trí này không?')) {
+                              setFormData(prev => ({ ...prev, vi_tri_kho: loc }));
+                              setShowLocationSelector(false);
+                            }
+                          }}
+                        />
+                      </td>
+                      <td>{loc.ma_vi_tri}</td>
+                      <td>{loc.hang}</td>
+                      <td>{loc.cot}</td>
+                      <td>{loc.loai_vi_tri}</td>
+                      <td>{loc.tai_trong_max}</td>
+                      <td>{loc.chieu_cao_max}</td>
+                      <td>{loc.trang_thai}</td>
+                      <td>{loc.gan_cua_ra ? 'Có' : 'Không'}</td>
+                      <td>{loc.vi_tri_cach_ly ? 'Có' : 'Không'}</td>
+                      <td>{loc.ghi_chu}</td>
+                      <td>{loc.created_at}</td>
+                      <td>{loc.updated_at}</td>
+                      <td>{loc.khu_vuc_id}</td>
+                      <td>{loc.pallet_id}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <button className="btn btn-outline" onClick={() => setShowLocationSelector(false)}>Đóng</button>
+          </div>
+        </div>
       )}
     </div>
   );

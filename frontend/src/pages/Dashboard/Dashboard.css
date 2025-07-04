@@ -1,5 +1,10 @@
 /* src/pages/Dashboard/Dashboard.css */
 
+:root, body, html {
+  min-height: 100vh;
+  height: auto !important;
+}
+
 .dashboard {
   padding: 1.5rem;
   background: #f8f9fa;
@@ -179,7 +184,7 @@
   height: 6px;
   background: #e9ecef;
   border-radius: 3px;
-  overflow: hidden;
+  overflow: auto;
   margin-bottom: 0.5rem;
 }
 
@@ -492,7 +497,7 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow: auto;
 }
 
 .activity-item {

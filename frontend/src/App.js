@@ -3,9 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import { AuthProvider } from './context/AuthContext';
+import LoginForm from './components/auth/LoginForm';
+import './styles/auth.css';
+import { useAuth } from './context/AuthContext';
 
 // Import Common Components và Styles
 import './components/common/styles.css';
+import './styles/globals.css';
 import {
   Header,
   Sidebar,
@@ -25,30 +30,30 @@ import {
 import XuatHang from './pages/XuatHang/XuatHang';
 import NhapHang from './pages/NhapHang/NhapHang';
 // Temporary Context Providers (tạm thời)
-const AuthContext = React.createContext();
-const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState({ 
-    id: 1, 
-    name: 'Admin User', 
-    email: 'admin@warehouse.com',
-    role: 'admin'
-  });
-  const [loading, setLoading] = useState(false);
-  
-  return (
-    <AuthContext.Provider value={{ user, loading, setUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+// const AuthContext = React.createContext();
+// const AuthProvider = ({ children }) => {
+//   const [user, setUser] = useState({
+//     id: 1,
+//     name: 'Admin User',
+//     email: 'admin@warehouse.com',
+//     role: 'admin'
+//   });
+//   const [loading, setLoading] = useState(false);
+//
+//   return (
+//     <AuthContext.Provider value={{ user, loading, setUser }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// };
 
-const useAuth = () => {
-  const context = React.useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
+// const useAuth = () => {
+//   const context = React.useContext(AuthContext);
+//   if (!context) {
+//     throw new Error('useAuth must be used within AuthProvider');
+//   }
+//   return context;
+// };
 
 // Temporary Context Providers
 const WarehouseProvider = ({ children }) => children;
@@ -307,35 +312,35 @@ const AppLayout = ({ children }) => {
   }, [user, toast]);
 
   // Handle user menu actions
-  const handleUserMenuClick = async (action) => {
-    switch (action.action) {
-      case 'profile':
-        toast.info('Chuyển đến trang hồ sơ');
-        break;
-        
-      case 'settings':
-        toast.info('Chuyển đến cài đặt');
-        break;
-        
-      case 'logout':
-        const confirmed = await showConfirm({
-          title: 'Đăng xuất',
-          message: 'Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?',
-          type: 'warning',
-          confirmText: 'Đăng xuất',
-          cancelText: 'Hủy'
-        });
-        
-        if (confirmed) {
-          toast.success('Đăng xuất thành công');
-          // Logic logout here
-        }
-        break;
-        
-      default:
-        console.log('Unknown action:', action);
-    }
-  };
+ const handleUserMenuClick = async (action) => {
+  switch (action.action) {
+    case 'profile':
+      toast.info('Chuyển đến trang hồ sơ');
+      break;
+
+    case 'settings':
+      toast.info('Chuyển đến cài đặt');
+      break;
+
+    case 'logout':
+      const confirmed = await showConfirm({
+        title: 'Đăng xuất',
+        message: 'Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?',
+        type: 'warning',
+        confirmText: 'Đăng xuất',
+        cancelText: 'Hủy'
+      });
+
+      if (confirmed) {
+        await logout(); // Gọi hàm logout từ AuthContext
+        toast.success('Đăng xuất thành công');
+      }
+      break;
+
+    default:
+      console.log('Unknown action:', action);
+  }
+};
 
   // Handle navigation click
   const handleNavigationClick = (item) => {
@@ -560,94 +565,94 @@ const App = () => {
   }
 
   return (
-    <AuthProvider>
-      <PermissionProvider>
-        <SettingsProvider>
-          <WarehouseProvider>
-            <NotificationProvider>
-              <ToastProvider position="top-right" maxToasts={5}>
-                <Router>
-                  <div className="App">
-                    <Routes>
-                      {/* Public Routes */}
-                      <Route path="/login" element={<Login />} />
-                      
-                      {/* Protected Routes */}
-                      <Route path="/" element={
-                        <ProtectedRoute>
-                          <AppLayout>
-                            <Navigate to="/dashboard" replace />
-                          </AppLayout>
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="/dashboard" element={
-                        <ProtectedRoute>
-                          <AppLayout>
-                            <Dashboard />
-                          </AppLayout>
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="/nhap-hang/*" element={
-                        <ProtectedRoute>
-                          <AppLayout>
-                            <NhapHang />
-                          </AppLayout>
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="/tao-don/*" element={
-                        <ProtectedRoute>
-                          <AppLayout>
-                            <TaoDon />
-                          </AppLayout>
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="/xuat-hang/*" element={
-                        <ProtectedRoute>
-                          <AppLayout>
-                            <XuatHang />
-                          </AppLayout>
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="/quan-ly-kho/*" element={
-                        <ProtectedRoute>
-                          <AppLayout>
-                            <QuanLyKho />
-                          </AppLayout>
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="/kiem-tra-giao-hang/*" element={
-                        <ProtectedRoute>
-                          <AppLayout>
-                            <KiemTraGiaoHang />
-                          </AppLayout>
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="/bao-cao/*" element={
-                        <ProtectedRoute>
-                          <AppLayout>
-                            <BaoCao />
-                          </AppLayout>
-                        </ProtectedRoute>
-                      } />
-                      
-                      {/* Fallback route */}
-                      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                    </Routes>
-                  </div>
-                </Router>
-              </ToastProvider>
-            </NotificationProvider>
-          </WarehouseProvider>
-        </SettingsProvider>
-      </PermissionProvider>
-    </AuthProvider>
+      <Router>
+        <AuthProvider>
+          <PermissionProvider>
+            <SettingsProvider>
+              <WarehouseProvider>
+                <NotificationProvider>
+                  <ToastProvider position="top-right" maxToasts={5}>
+                      <div className="App">
+                        <Routes>
+                          {/* Public Routes */}
+                         <Route path="/login" element={<LoginForm />} />
+
+                          {/* Protected Routes */}
+                          <Route path="/" element={
+                            <ProtectedRoute>
+                              <AppLayout>
+                                <Navigate to="/dashboard" replace />
+                              </AppLayout>
+                            </ProtectedRoute>
+                          } />
+
+                          <Route path="/dashboard" element={
+                            <ProtectedRoute>
+                              <AppLayout>
+                                <Dashboard />
+                              </AppLayout>
+                            </ProtectedRoute>
+                          } />
+
+                          <Route path="/nhap-hang/*" element={
+                            <ProtectedRoute>
+                              <AppLayout>
+                                <NhapHang />
+                              </AppLayout>
+                            </ProtectedRoute>
+                          } />
+
+                          <Route path="/tao-don/*" element={
+                            <ProtectedRoute>
+                              <AppLayout>
+                                <TaoDon />
+                              </AppLayout>
+                            </ProtectedRoute>
+                          } />
+
+                          <Route path="/xuat-hang/*" element={
+                            <ProtectedRoute>
+                              <AppLayout>
+                                <XuatHang />
+                              </AppLayout>
+                            </ProtectedRoute>
+                          } />
+
+                          <Route path="/quan-ly-kho/*" element={
+                            <ProtectedRoute>
+                              <AppLayout>
+                                <QuanLyKho />
+                              </AppLayout>
+                            </ProtectedRoute>
+                          } />
+
+                          <Route path="/kiem-tra-giao-hang/*" element={
+                            <ProtectedRoute>
+                              <AppLayout>
+                                <KiemTraGiaoHang />
+                              </AppLayout>
+                            </ProtectedRoute>
+                          } />
+
+                          <Route path="/bao-cao/*" element={
+                            <ProtectedRoute>
+                              <AppLayout>
+                                <BaoCao />
+                              </AppLayout>
+                            </ProtectedRoute>
+                          } />
+
+                          {/* Fallback route */}
+                          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                        </Routes>
+                      </div>
+                  </ToastProvider>
+                </NotificationProvider>
+              </WarehouseProvider>
+            </SettingsProvider>
+          </PermissionProvider>
+        </AuthProvider>
+      </Router>
   );
 };
 

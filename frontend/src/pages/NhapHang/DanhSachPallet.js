@@ -37,111 +37,44 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
     totalPages: 0
   });
 
-  // Sample data for demonstration
+  // Load pallets data from API
   useEffect(() => {
-    const loadSampleData = async () => {
+    const loadPallets = async () => {
       setLoading(true);
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const samplePallets = [
-          {
-            id: 1,
-            ma_pallet: 'P-2025-001',
-            san_pham: {
-              ten_san_pham: 'Bia Heineken 330ml',
-              nhom_hang: 'Bia',
-              ma_san_pham: 'SP-001'
-            },
-            so_thung_ban_dau: 100,
-            so_thung_con_lai: 85,
-            vi_tri_kho: { ma_vi_tri: 'A1', khu_vuc: 'A' },
-            ngay_san_xuat: '2025-01-15',
-            han_su_dung: '2025-07-15',
-            ngay_kiem_tra_cl: '2025-06-15',
-            trang_thai: 'Đã_mở',
-            trong_luong_thung: 15.5,
-            nguoi_tao: 'Nguyễn Văn A',
-            created_at: '2025-01-20T08:30:00Z',
-            ghi_chu: 'Lô mới, chất lượng tốt'
-          },
-          {
-            id: 2,
-            ma_pallet: 'P-2025-002',
-            san_pham: {
-              ten_san_pham: 'Coca Cola 355ml',
-              nhom_hang: 'Nước ngọt',
-              ma_san_pham: 'SP-002'
-            },
-            so_thung_ban_dau: 120,
-            so_thung_con_lai: 120,
-            vi_tri_kho: { ma_vi_tri: 'B2', khu_vuc: 'B' },
-            ngay_san_xuat: '2025-01-10',
-            han_su_dung: '2025-06-10',
-            ngay_kiem_tra_cl: '2025-06-08',
-            trang_thai: 'Mới',
-            trong_luong_thung: 12.8,
-            nguoi_tao: 'Trần Thị B',
-            created_at: '2025-01-22T10:15:00Z',
-            ghi_chu: ''
-          },
-          {
-            id: 3,
-            ma_pallet: 'P-2025-003',
-            san_pham: {
-              ten_san_pham: 'Nước suối Lavie 500ml',
-              nhom_hang: 'Nước suối',
-              ma_san_pham: 'SP-003'
-            },
-            so_thung_ban_dau: 80,
-            so_thung_con_lai: 0,
-            vi_tri_kho: { ma_vi_tri: 'C1', khu_vuc: 'C' },
-            ngay_san_xuat: '2025-01-05',
-            han_su_dung: '2025-12-05',
-            ngay_kiem_tra_cl: '2025-07-05',
-            trang_thai: 'Trống',
-            trong_luong_thung: 10.2,
-            nguoi_tao: 'Lê Văn C',
-            created_at: '2025-01-25T14:20:00Z',
-            ghi_chu: 'Đã xuất hết'
-          },
-          {
-            id: 4,
-            ma_pallet: 'P-2025-004',
-            san_pham: {
-              ten_san_pham: 'Tiger Beer 355ml',
-              nhom_hang: 'Bia',
-              ma_san_pham: 'SP-004'
-            },
-            so_thung_ban_dau: 90,
-            so_thung_con_lai: 45,
-            vi_tri_kho: { ma_vi_tri: 'A3', khu_vuc: 'A' },
-            ngay_san_xuat: '2025-01-08',
-            han_su_dung: '2025-06-08',
-            ngay_kiem_tra_cl: '2025-06-06',
-            trang_thai: 'Đã_mở',
-            trong_luong_thung: 14.2,
-            nguoi_tao: 'Phạm Văn D',
-            created_at: '2025-01-28T09:45:00Z',
-            ghi_chu: 'Cần kiểm tra CL sớm'
+        const response = await fetch('http://127.0.0.1:8000/api/warehouse/pallet/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
-        ];
+        });
         
-        setPallets(samplePallets);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Fetched pallet data:', data); // DEBUG
+        
+        // Transform API data to match component structure
+        const transformedPallets = data.results || data || [];
+        
+        setPallets(transformedPallets);
         setPagination(prev => ({
           ...prev,
-          totalItems: samplePallets.length,
-          totalPages: Math.ceil(samplePallets.length / prev.pageSize)
+          totalItems: data.count || transformedPallets.length,
+          totalPages: Math.ceil((data.count || transformedPallets.length) / prev.pageSize)
         }));
       } catch (err) {
         setError('Không thể tải danh sách pallet');
+        console.error('Error loading pallets:', err); // DEBUG
       } finally {
         setLoading(false);
       }
     };
 
-    loadSampleData();
+    loadPallets();
   }, []);
 
   // Filter and sort pallets
@@ -285,11 +218,33 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
     console.log('Printing:', selectedData);
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (window.confirm(`Bạn có chắc muốn xóa ${selectedPallets.length} pallet đã chọn?`)) {
-      setPallets(prev => prev.filter(p => !selectedPallets.includes(p.id)));
-      setSelectedPallets([]);
-      setShowBulkActions(false);
+      try {
+        console.log('Bulk deleting pallets:', selectedPallets); // DEBUG
+        const response = await fetch('http://127.0.0.1:8000/warehouse/pallet/bulk-delete/', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ pallet_ids: selectedPallets })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Remove from local state after successful API call
+        setPallets(prev => prev.filter(p => !selectedPallets.includes(p.id)));
+        setSelectedPallets([]);
+        setShowBulkActions(false);
+        
+        alert('Đã xóa thành công các pallet đã chọn');
+      } catch (err) {
+        console.error('Error deleting pallets:', err); // DEBUG
+        alert('Có lỗi xảy ra khi xóa pallet');
+      }
     }
   };
 
@@ -506,199 +461,119 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                   onChange={handleSelectAll}
                 />
               </th>
-              <th 
-                className={`sortable ${sorting.field === 'ma_pallet' ? sorting.direction : ''}`}
-                onClick={() => handleSort('ma_pallet')}
-              >
-                Mã Pallet
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th 
-                className={`sortable ${sorting.field === 'san_pham' ? sorting.direction : ''}`}
-                onClick={() => handleSort('san_pham')}
-              >
-                Sản phẩm
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th className="center">Số lượng</th>
-              <th 
-                className={`sortable ${sorting.field === 'vi_tri' ? sorting.direction : ''}`}
-                onClick={() => handleSort('vi_tri')}
-              >
-                Vị trí
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th 
-                className={`sortable ${sorting.field === 'han_su_dung' ? sorting.direction : ''}`}
-                onClick={() => handleSort('han_su_dung')}
-              >
-                Hạn sử dụng
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th 
-                className={`sortable ${sorting.field === 'trang_thai' ? sorting.direction : ''}`}
-                onClick={() => handleSort('trang_thai')}
-              >
-                Trạng thái
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th 
-                className={`sortable ${sorting.field === 'created_at' ? sorting.direction : ''}`}
-                onClick={() => handleSort('created_at')}
-              >
-                Ngày tạo
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th className="actions-col">Thao tác</th>
+              <th>Mã Pallet</th>
+              <th>Sản phẩm</th>
+              <th>Nhà cung cấp</th>
+              <th>Số thùng ban đầu</th>
+              <th>Số thùng còn lại</th>
+              <th>Vị trí</th>
+              <th>Hạn sử dụng</th>
+              <th>Ngày sản xuất</th>
+              <th>Ngày kiểm tra CL</th>
+              <th>Trọng lượng/thùng (kg)</th>
+              <th>Chiều dài (cm)</th>
+              <th>Chiều rộng (cm)</th>
+              <th>Chiều cao (cm)</th>
+              <th>Nhiệt độ bảo quản (°C)</th>
+              <th>Độ ẩm bảo quản (%)</th>
+              <th>Người tạo</th>
+              <th>Ngày tạo</th>
+              <th>Ghi chú</th>
+              <th>Thao tác</th>
             </tr>
           </thead>
           
           <tbody>
-            {paginatedPallets.map(pallet => {
-              const statusInfo = getStatusInfo(pallet.trang_thai);
-              const expiryInfo = getExpiryInfo(pallet.han_su_dung);
-              const utilizationRate = (pallet.so_thung_con_lai / pallet.so_thung_ban_dau) * 100;
-              
-              return (
-                <tr key={pallet.id} className={selectedPallets.includes(pallet.id) ? 'selected' : ''}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedPallets.includes(pallet.id)}
-                      onChange={() => handleSelectPallet(pallet.id)}
-                    />
-                  </td>
-                  
-                  <td>
-                    <div className="pallet-code">
-                      <strong>{pallet.ma_pallet}</strong>
-                      {pallet.ghi_chu && (
-                        <i className="icon-message-circle note-indicator" title={pallet.ghi_chu}></i>
-                      )}
-                    </div>
-                  </td>
-                  
-                  <td>
-                    <div className="product-info">
-                      <div className="product-name">{pallet.san_pham.ten_san_pham}</div>
-                      <div className="product-group">{pallet.san_pham.nhom_hang}</div>
-                    </div>
-                  </td>
-                  
-                  <td className="center">
-                    <div className="quantity-info">
-                      <div className="quantity-text">
-                        <strong>{pallet.so_thung_con_lai}</strong>/{pallet.so_thung_ban_dau}
-                      </div>
-                      <div className="progress-bar">
-                        <div 
-                          className="progress-fill"
-                          style={{ 
-                            width: `${utilizationRate}%`,
-                            backgroundColor: utilizationRate === 0 ? '#dc3545' : 
-                                           utilizationRate < 30 ? '#ffc107' : '#28a745'
-                          }}
-                        ></div>
-                      </div>
-                      <div className="quantity-percent">{utilizationRate.toFixed(0)}%</div>
-                    </div>
-                  </td>
-                  
-                  <td>
-                    <div className="location-info">
-                      <span className="location-code">{pallet.vi_tri_kho?.ma_vi_tri || 'N/A'}</span>
-                      {pallet.vi_tri_kho && (
-                        <span className="location-area">Khu {pallet.vi_tri_kho.khu_vuc}</span>
-                      )}
-                    </div>
-                  </td>
-                  
-                  <td>
-                    <div className="expiry-info">
-                      <div className="expiry-date">
-                        {new Date(pallet.han_su_dung).toLocaleDateString('vi-VN')}
-                      </div>
-                      <div className={`expiry-status ${expiryInfo.color}`}>
-                        {expiryInfo.type === 'expired' ? `Quá hạn ${expiryInfo.days} ngày` :
-                         expiryInfo.type === 'expiring' ? `Còn ${expiryInfo.days} ngày` :
-                         expiryInfo.type === 'warning' ? `Còn ${expiryInfo.days} ngày` :
-                         `Còn ${expiryInfo.days} ngày`}
-                      </div>
-                    </div>
-                  </td>
-                  
-                  <td>
-                    <span className={`status-badge ${statusInfo.color}`}>
-                      <i className={`icon-${statusInfo.icon}`}></i>
-                      {statusInfo.text}
-                    </span>
-                  </td>
-                  
-                  <td>
-                    <div className="date-info">
-                      <div className="create-date">
-                        {new Date(pallet.created_at).toLocaleDateString('vi-VN')}
-                      </div>
-                      <div className="create-time">
-                        {new Date(pallet.created_at).toLocaleTimeString('vi-VN', { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </div>
-                    </div>
-                  </td>
-                  
-                  <td>
-                    <div className="action-buttons">
+            {paginatedPallets.map(pallet => (
+              <tr key={pallet.id} className={selectedPallets.includes(pallet.id) ? 'selected' : ''}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedPallets.includes(pallet.id)}
+                    onChange={() => handleSelectPallet(pallet.id)}
+                  />
+                </td>
+                <td>{pallet.ma_pallet}</td>
+                <td>{pallet.san_pham?.ten_san_pham}</td>
+                <td>{pallet.nha_cung_cap?.ten_nha_cung_cap}</td>
+                <td>{pallet.so_thung_ban_dau}</td>
+                <td>{pallet.so_thung_con_lai}</td>
+                <td>{pallet.vi_tri_kho?.ma_vi_tri}</td>
+                <td>{pallet.han_su_dung ? new Date(pallet.han_su_dung).toLocaleDateString('vi-VN') : ''}</td>
+                <td>{pallet.ngay_san_xuat ? new Date(pallet.ngay_san_xuat).toLocaleDateString('vi-VN') : ''}</td>
+                <td>{pallet.ngay_kiem_tra_cl ? new Date(pallet.ngay_kiem_tra_cl).toLocaleDateString('vi-VN') : ''}</td>
+                <td>{pallet.trong_luong_thung}</td>
+                <td>{pallet.chieu_dai}</td>
+                <td>{pallet.chieu_rong}</td>
+                <td>{pallet.chieu_cao}</td>
+                <td>{pallet.nhiet_do_bao_quan}</td>
+                <td>{pallet.do_am_bao_quan}</td>
+                <td>{pallet.nguoi_tao}</td>
+                <td>{pallet.created_at ? new Date(pallet.created_at).toLocaleString('vi-VN') : ''}</td>
+                <td>{pallet.ghi_chu}</td>
+                <td>
+                  <div className="action-buttons">
+                    <button
+                      className="btn-icon btn-info"
+                      onClick={() => onViewDetail(pallet)}
+                      title="Xem chi tiết"
+                    >
+                      <i className="icon-eye"></i>
+                    </button>
+                    {canPrint && (
                       <button
-                        className="btn-icon btn-info"
-                        onClick={() => onViewDetail(pallet)}
-                        title="Xem chi tiết"
+                        className="btn-icon btn-warning"
+                        onClick={() => {
+                          setSelectedQRPallet(pallet);
+                          setShowQRModal(true);
+                        }}
+                        title="Xem QR Code"
                       >
-                        <i className="icon-eye"></i>
+                        <i className="icon-qr-code"></i>
                       </button>
-                      
-                      {canPrint && (
-                        <button
-                          className="btn-icon btn-warning"
-                          onClick={() => {
-                            setSelectedQRPallet(pallet);
-                            setShowQRModal(true);
-                          }}
-                          title="Xem QR Code"
-                        >
-                          <i className="icon-qr-code"></i>
-                        </button>
-                      )}
-                      
-                      {canEdit && (
-                        <button
-                          className="btn-icon btn-primary"
-                          onClick={() => console.log('Edit pallet:', pallet.id)}
-                          title="Chỉnh sửa"
-                        >
-                          <i className="icon-edit"></i>
-                        </button>
-                      )}
-                      
-                      {canDelete && (
-                        <button
-                          className="btn-icon btn-danger"
-                          onClick={() => {
-                            if (window.confirm(`Bạn có chắc muốn xóa pallet ${pallet.ma_pallet}?`)) {
+                    )}
+                    {canEdit && (
+                      <button
+                        className="btn-icon btn-primary"
+                        onClick={() => console.log('Edit pallet:', pallet.id)}
+                        title="Chỉnh sửa"
+                      >
+                        <i className="icon-edit"></i>
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        className="btn-icon btn-danger"
+                        onClick={async () => {
+                          if (window.confirm(`Bạn có chắc muốn xóa pallet ${pallet.ma_pallet}?`)) {
+                            try {
+                              console.log('Deleting pallet:', pallet.id); // DEBUG
+                              const response = await fetch(`http://127.0.0.1:8000/warehouse/pallet/${pallet.id}/`, {
+                                method: 'DELETE',
+                                headers: {
+                                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                }
+                              });
+                              if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                              }
                               setPallets(prev => prev.filter(p => p.id !== pallet.id));
+                              alert('Đã xóa pallet thành công');
+                            } catch (err) {
+                              console.error('Error deleting pallet:', err); // DEBUG
+                              alert('Có lỗi xảy ra khi xóa pallet');
                             }
-                          }}
-                          title="Xóa"
-                        >
-                          <i className="icon-trash-2"></i>
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+                          }
+                        }}
+                        title="Xóa"
+                      >
+                        <i className="icon-trash-2"></i>
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
