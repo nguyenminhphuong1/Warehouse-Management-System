@@ -242,6 +242,76 @@ class ModulePermission(models.Model):
             'reason': self.reason,
             'notes': self.notes
         }
+                # Add to existing ModulePermission model
+    @classmethod
+    def check_permission(cls, user, module, action, context=None):
+        """Class method to check permission for user"""
+        if user.is_admin():
+            return True
+        
+        permission = cls.objects.filter(
+            role__user_roles__user=user,
+            role__user_roles__is_active=True,
+            role__is_active=True,
+            module=module,
+            action__in=[action, 'full_access'],
+            is_granted=True
+        ).first()
+    
+        if not permission:
+            return False
+        
+        if context:
+            return permission.check_conditions(context)
+        
+        return True
+    @classmethod
+    def check_any_permission(cls, user, module, actions, context=None):
+        """Check if user has any of the specified permissions"""
+        return any(
+            cls.check_permission(user, module, action, context)
+            for action in actions
+        )
+    @classmethod
+    def check_all_permissions(cls, user, module, actions, context=None):
+        """Check if user has all specified permissions"""
+        return all(
+            cls.check_permission(user, module, action, context)
+            for action in actions
+        )
+
+    @classmethod
+    def get_user_permissions(cls, user):
+        """Get all permissions for a user"""
+        if user.is_admin():
+            return {
+                module[0]: ['full_access'] 
+                for module in cls.MODULE_CHOICES
+            }
+        
+        permissions = {}
+        user_permissions = cls.objects.filter(
+            role__user_roles__user=user,
+            role__user_roles__is_active=True,
+            role__is_active=True,
+            is_granted=True
+        ).select_related('role')
+    
+        for perm in user_permissions:
+            if not perm.is_valid():
+                continue
+            
+            if perm.module not in permissions:
+                permissions[perm.module] = []
+            
+            if perm.action == 'full_access':
+                permissions[perm.module] = ['full_access']
+                continue
+            
+            if perm.action not in permissions[perm.module]:
+                permissions[perm.module].append(perm.action)
+            
+        return permissions
 
 
 class PermissionAuditLog(models.Model):
@@ -403,7 +473,9 @@ class PermissionAuditLog(models.Model):
             success=success,
             error_message=error_message,
             ip_address=ip_address,
-            user_agent=user_agent
+            user_agent=user_agent,
+            module = 'auth',
+            action='login_attempt'
         )
     
     @classmethod
@@ -445,10 +517,7 @@ class PermissionAuditLog(models.Model):
             'ip_address': self.ip_address,
             'timestamp': self.timestamp,
             'notes': self.notes
-        }.expires_at += timedelta(days=days)
-        else:
-            self.expires_at = timezone.now() + timedelta(days=days)
-        self.save()
+        }
     
     def revoke(self, reason="", revoked_by=None):
         """Thu hồi quyền"""
@@ -523,6 +592,15 @@ class PermissionAuditLog(models.Model):
             'reason': self.reason,
             'notes': self.notes
         }
+    def extend_expiry(self, days):
+        from django.utils import timezone
+        from datetime import timedelta
+        now = timezone.now()
+        if self.expires_at and self.expires_at > now:
+            self.expires_at += timedelta(days=days)
+        else:
+            self.expires_at = now + timedelta(days=days)
+        self.save()
 
 class UserRole(models.Model):
     """
