@@ -1,7 +1,6 @@
-// src/context/AuthContext.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import api from '../services/api'; // ✅ import axios instance
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -9,20 +8,29 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // ✅ Decode JWT helper
+  const decodeJWT = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
-      try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-
-        const userData = JSON.parse(jsonPayload);
-        setUser(userData);
-      } catch (error) {
-        console.error('Error parsing token:', error);
+      const decoded = decodeJWT(token);
+      if (decoded) {
+        setUser(decoded);
+        // ✅ gắn lại Authorization sau reload
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      } else {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
       }
@@ -30,40 +38,46 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
- const login = async (username, password, remember) => {
+  const login = async (username, password, remember) => {
     try {
-      const response = await fetch('http://localhost:8001/api/token/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password })
-      });
+      const response = await api.post('/token/', { username, password }); // ✅ dùng axios
+      const data = response.data;
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Đăng nhập không thành công');
-      }
-
-      const data = await response.json();
       localStorage.setItem('access_token', data.access);
       if (remember) {
         localStorage.setItem('refresh_token', data.refresh);
+      } else {
+        localStorage.removeItem('refresh_token');
       }
-      setUser(data.user);
+
+      const decoded = decodeJWT(data.access);
+      if (!decoded) throw new Error('Token không hợp lệ');
+
+      setUser(decoded);
+      api.defaults.headers.common['Authorization'] = `Bearer ${data.access}`;
+
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: error.response?.data?.detail || 'Đăng nhập thất bại' };
     }
-};
-
-  const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('remember_me');
-    setUser(null);
-    navigate('/login');
   };
+
+  const logout = async () => {
+  const refreshToken = localStorage.getItem('refresh_token');
+  try {
+    if (refreshToken) {
+      await api.post('/logout/', { refresh_token: refreshToken });
+    }
+  } catch (err) {
+    console.warn('Logout error:', err);
+  }
+
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('remember_me');
+  setUser(null);
+  navigate('/login');
+};
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, setUser }}>

@@ -260,7 +260,7 @@ const checkSystemHealth = async () => {
 
 // Layout Component with Common Components
 const AppLayout = ({ children }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [systemHealth, setSystemHealth] = useState(null);

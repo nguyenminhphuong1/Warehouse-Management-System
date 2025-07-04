@@ -9,6 +9,8 @@ from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import login, logout
 from django.utils import timezone
 from django.conf import settings
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.accounts.models import User, PermissionAuditLog
 from apps.accounts.serializers.auth import (
@@ -62,20 +64,17 @@ class LoginView(APIView):
                     ip_address=get_client_ip(request),
                     user_agent=get_user_agent(request)
                 )
-                
+
                 response_data = {
                     'access_token': str(access_token),
                     'refresh_token': str(refresh),
                     'token_type': 'Bearer',
                     'expires_in': int(access_token.lifetime.total_seconds()),
-                    'user': user,  
+                    'user': UserProfileSerializer(user, context={'request': request}).data,
                     'permissions': permissions_data
                 }
 
-                return Response(
-                    TokenResponseSerializer(response_data, context={'request': request}).data,
-                    status=status.HTTP_200_OK
-                )
+                return Response(response_data, status=status.HTTP_200_OK)
                 
             except Exception as e:
                 import traceback
@@ -281,7 +280,7 @@ class ChangePasswordView(APIView):
                     'permissions': permissions_data
                 }
 
-                return Response(TokenResponseSerializer(response_data).data)
+                return Response(response_data, status=status.HTTP_200_OK)
 
             except Exception as e:
                 return Response(
@@ -378,6 +377,35 @@ class CheckPermissionView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Thêm field tùy chỉnh vào token nếu muốn
+        token['username'] = user.username
+        token['is_admin'] = user.is_admin()
+
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        # Trả thêm thông tin user dưới dạng JSON serializable
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'full_name': self.user.get_full_name(),
+            'email': self.user.email,
+            'is_admin': self.user.is_admin()
+        }
+        return data
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class UserModulesView(APIView):
     """
