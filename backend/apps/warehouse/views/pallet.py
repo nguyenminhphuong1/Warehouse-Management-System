@@ -106,3 +106,20 @@ class PalletViewSet(viewsets.ModelViewSet):
             return Response({"message":f"Đã chuyển pallet {pallet.ma_pallet} sang vị trí {vi_tri_moi.ma_vi_tri}."}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error":str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+    #API lấy ra qr của pallet
+    @swagger_auto_schema(
+        method='get',
+        operation_summary="Lấy ra qr của pallet",
+        operation_description="API lấy qr của pallet",
+        responses={200: openapi.Response(description="Thành công")}
+    )
+    @action(detail=True, methods=['get'], url_path='qr_code')
+    def qr_code(self, request, pk=None):
+        try:
+            pallet = self.get_object()
+            pallet.generate_qr_code()
+            return Response({"qr_code_url": pallet.qr_code.url}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error":str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
