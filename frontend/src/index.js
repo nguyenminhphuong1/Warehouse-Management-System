@@ -1,10 +1,11 @@
 // src/index.js - React Entry Point for Warehouse Management System
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 // Enhanced Error Boundary Component for Warehouse System
 class WarehouseErrorBoundary extends React.Component {

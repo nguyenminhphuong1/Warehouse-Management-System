@@ -12,6 +12,11 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedQRPallet, setSelectedQRPallet] = useState(null);
+  const [printQRData, setPrintQRData] = useState(null);
+  const [showPrintQRModal, setShowPrintQRModal] = useState(false);
+  const [showCreateQRModal, setShowCreateQRModal] = useState(false);
+  const [createQRUrl, setCreateQRUrl] = useState('');
+  const [createQRMaPallet, setCreateQRMaPallet] = useState('');
   
   // Filters and Sorting
   const [filters, setFilters] = useState({
@@ -435,7 +440,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
             {canPrint && (
               <button className="btn btn-warning" onClick={handleBulkPrint}>
                 <i className="icon-printer"></i>
-                In QR
+                Tạo QR
               </button>
             )}
             
@@ -464,25 +469,10 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
               <th>Mã Pallet</th>
               <th>Sản phẩm</th>
               <th>Nhà cung cấp</th>
-              <th>Số thùng ban đầu</th>
-              <th>Số thùng còn lại</th>
               <th>Vị trí</th>
-              <th>Hạn sử dụng</th>
-              <th>Ngày sản xuất</th>
-              <th>Ngày kiểm tra CL</th>
-              <th>Trọng lượng/thùng (kg)</th>
-              <th>Chiều dài (cm)</th>
-              <th>Chiều rộng (cm)</th>
-              <th>Chiều cao (cm)</th>
-              <th>Nhiệt độ bảo quản (°C)</th>
-              <th>Độ ẩm bảo quản (%)</th>
-              <th>Người tạo</th>
-              <th>Ngày tạo</th>
-              <th>Ghi chú</th>
               <th>Thao tác</th>
             </tr>
           </thead>
-          
           <tbody>
             {paginatedPallets.map(pallet => (
               <tr key={pallet.id} className={selectedPallets.includes(pallet.id) ? 'selected' : ''}>
@@ -496,80 +486,64 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                 <td>{pallet.ma_pallet}</td>
                 <td>{pallet.san_pham?.ten_san_pham}</td>
                 <td>{pallet.nha_cung_cap?.ten_nha_cung_cap}</td>
-                <td>{pallet.so_thung_ban_dau}</td>
-                <td>{pallet.so_thung_con_lai}</td>
                 <td>{pallet.vi_tri_kho?.ma_vi_tri}</td>
-                <td>{pallet.han_su_dung ? new Date(pallet.han_su_dung).toLocaleDateString('vi-VN') : ''}</td>
-                <td>{pallet.ngay_san_xuat ? new Date(pallet.ngay_san_xuat).toLocaleDateString('vi-VN') : ''}</td>
-                <td>{pallet.ngay_kiem_tra_cl ? new Date(pallet.ngay_kiem_tra_cl).toLocaleDateString('vi-VN') : ''}</td>
-                <td>{pallet.trong_luong_thung}</td>
-                <td>{pallet.chieu_dai}</td>
-                <td>{pallet.chieu_rong}</td>
-                <td>{pallet.chieu_cao}</td>
-                <td>{pallet.nhiet_do_bao_quan}</td>
-                <td>{pallet.do_am_bao_quan}</td>
-                <td>{pallet.nguoi_tao}</td>
-                <td>{pallet.created_at ? new Date(pallet.created_at).toLocaleString('vi-VN') : ''}</td>
-                <td>{pallet.ghi_chu}</td>
                 <td>
                   <div className="action-buttons">
                     <button
                       className="btn-icon btn-info"
-                      onClick={() => onViewDetail(pallet)}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          const response = await fetch(`http://127.0.0.1:8000/api/warehouse/pallet/${pallet.id}/`, {
+                            method: 'GET',
+                            headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            }
+                          });
+                          if (!response.ok) {
+                            throw new Error(`Lỗi lấy chi tiết pallet: ${response.status}`);
+                          }
+                          const data = await response.json();
+                          setSelectedQRPallet(data);
+                          setShowQRModal(true);
+                        } catch (err) {
+                          alert('Không lấy được chi tiết pallet!');
+                        }
+                      }}
                       title="Xem chi tiết"
                     >
-                      <i className="icon-eye"></i>
+                      <i className="icon-eye"></i> Xem chi tiết
                     </button>
-                    {canPrint && (
-                      <button
-                        className="btn-icon btn-warning"
-                        onClick={() => {
-                          setSelectedQRPallet(pallet);
-                          setShowQRModal(true);
-                        }}
-                        title="Xem QR Code"
-                      >
-                        <i className="icon-qr-code"></i>
-                      </button>
-                    )}
-                    {canEdit && (
-                      <button
-                        className="btn-icon btn-primary"
-                        onClick={() => console.log('Edit pallet:', pallet.id)}
-                        title="Chỉnh sửa"
-                      >
-                        <i className="icon-edit"></i>
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button
-                        className="btn-icon btn-danger"
-                        onClick={async () => {
-                          if (window.confirm(`Bạn có chắc muốn xóa pallet ${pallet.ma_pallet}?`)) {
-                            try {
-                              console.log('Deleting pallet:', pallet.id); // DEBUG
-                              const response = await fetch(`http://127.0.0.1:8000/warehouse/pallet/${pallet.id}/`, {
-                                method: 'DELETE',
-                                headers: {
-                                  'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                }
-                              });
-                              if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
-                              }
-                              setPallets(prev => prev.filter(p => p.id !== pallet.id));
-                              alert('Đã xóa pallet thành công');
-                            } catch (err) {
-                              console.error('Error deleting pallet:', err); // DEBUG
-                              alert('Có lỗi xảy ra khi xóa pallet');
+                    <button
+                      className="btn-icon btn-info"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          const response = await fetch(`http://127.0.0.1:8000/api/warehouse/pallet/${pallet.id}/qr_code/`, {
+                            method: 'GET',
+                            headers: {
+                              'Authorization': `Bearer ${localStorage.getItem('token')}`
                             }
+                          });
+                          if (!response.ok) {
+                            throw new Error(`Lỗi lấy QR Code: ${response.status}`);
                           }
-                        }}
-                        title="Xóa"
-                      >
-                        <i className="icon-trash-2"></i>
-                      </button>
-                    )}
+                          const data = await response.json();
+                          if (data.qr_code_url) {
+                            setCreateQRUrl(`http://127.0.0.1:8000${data.qr_code_url}`);
+                            setCreateQRMaPallet(pallet.ma_pallet || data.ma_pallet || '');
+                            setShowCreateQRModal(true);
+                          } else {
+                            alert('Không nhận được đường dẫn QR code!');
+                          }
+                        } catch (err) {
+                          alert('Lấy QR Code thất bại!');
+                        }
+                      }}
+                      title="Xem và in QR Code cho pallet này"
+                    >
+                      <i className="icon-qr-code"></i> QR Code
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -650,12 +624,12 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
         </div>
       </div>
 
-      {/* QR Code Modal */}
+      {/* Modal hiển thị chi tiết pallet */}
       {showQRModal && selectedQRPallet && (
         <div className="qr-modal">
           <div className="qr-modal-content">
             <div className="qr-modal-header">
-              <h3>QR Code - {selectedQRPallet.ma_pallet}</h3>
+              <h3>Chi tiết Pallet - {selectedQRPallet.ma_pallet}</h3>
               <button 
                 className="close-button"
                 onClick={() => {
@@ -666,43 +640,69 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                 <i className="icon-x"></i>
               </button>
             </div>
-            
             <div className="qr-modal-body">
-              <div className="qr-code-container">
-                <QRCodeCanvas
-                  value={generateQRData(selectedQRPallet)}
-                  size={200}
-                  level="M"
-                  includeMargin={true}
-                />
-              </div>
-              
               <div className="qr-info">
-                <div className="qr-details">
-                  <div className="detail-row">
-                    <span className="label">Mã pallet:</span>
-                    <span className="value">{selectedQRPallet.ma_pallet}</span>
+                <table className="detail-table">
+                  <tbody>
+                    {Object.entries(selectedQRPallet).map(([key, value]) => {
+                      const fieldMap = {
+                        id: 'ID',
+                        ma_pallet: 'Mã Pallet',
+                        san_pham: 'Sản phẩm',
+                        nha_cung_cap: 'Nhà cung cấp',
+                        vi_tri_kho: 'Vị trí',
+                        so_thung_ban_dau: 'Số thùng ban đầu',
+                        so_thung_con_lai: 'Số thùng còn lại',
+                        han_su_dung: 'Hạn sử dụng',
+                        ngay_san_xuat: 'Ngày sản xuất',
+                        ngay_kiem_tra_cl: 'Ngày kiểm tra CL',
+                        trong_luong_thung: 'Trọng lượng/thùng (kg)',
+                        chieu_dai: 'Chiều dài (cm)',
+                        chieu_rong: 'Chiều rộng (cm)',
+                        chieu_cao: 'Chiều cao (cm)',
+                        nhiet_do_bao_quan: 'Nhiệt độ bảo quản (°C)',
+                        do_am_bao_quan: 'Độ ẩm bảo quản (%)',
+                        nguoi_tao: 'Người tạo',
+                        created_at: 'Ngày tạo',
+                        ngay_nhap_kho: 'Ngày nhập kho',
+                        trang_thai: 'Trạng thái',
+                        lo_san_xuat: 'Lô sản xuất',
+                        so_phieu_nhap: 'Số phiếu nhập',
+                        ghi_chu: 'Ghi chú',
+                        qr_code_url: 'QR Code',
+                        qr_code: 'QR Code',
+                      };
+                      let displayValue = value;
+                      if (typeof value === 'object' && value !== null) {
+                        if (value.ten_san_pham) displayValue = value.ten_san_pham;
+                        else if (value.ten_nha_cung_cap) displayValue = value.ten_nha_cung_cap;
+                        else if (value.ma_vi_tri) displayValue = value.ma_vi_tri;
+                        else displayValue = JSON.stringify(value);
+                      }
+                      if (key === 'qr_code_url' && value) {
+                        displayValue = <a href={`http://127.0.0.1:8000${value}`} target="_blank" rel="noopener noreferrer">Xem QR</a>;
+                      }
+                      return (
+                        <tr key={key}>
+                          <td className="detail-label">{fieldMap[key] || key}</td>
+                          <td className="detail-value">{displayValue}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {selectedQRPallet.qr_code_url && (
+                  <div style={{ marginTop: 16, textAlign: 'center' }}>
+                    <button
+                      className="btn btn-info"
+                      onClick={() => window.open(`http://127.0.0.1:8000${selectedQRPallet.qr_code_url}`, '_blank')}
+                    >
+                      Tạo QR
+                    </button>
                   </div>
-                  <div className="detail-row">
-                    <span className="label">Sản phẩm:</span>
-                    <span className="value">{selectedQRPallet.san_pham.ten_san_pham}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Số lượng:</span>
-                    <span className="value">{selectedQRPallet.so_thung_con_lai} thùng</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Vị trí:</span>
-                    <span className="value">{selectedQRPallet.vi_tri_kho?.ma_vi_tri || 'Chưa có'}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Hạn sử dụng:</span>
-                    <span className="value">{new Date(selectedQRPallet.han_su_dung).toLocaleDateString('vi-VN')}</span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
-            
             <div className="qr-modal-actions">
               <button 
                 className="btn btn-secondary"
@@ -713,69 +713,105 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
               >
                 Đóng
               </button>
-              
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal in QR code */}
+      {showPrintQRModal && printQRData && (
+        <div className="qr-modal">
+          <div className="qr-modal-content qr-modal-print">
+            <div className="qr-modal-header">
+              <h3>In QR Code - {printQRData.ma_pallet || printQRData.id}</h3>
               <button 
-                className="btn btn-warning"
+                className="close-button"
                 onClick={() => {
-                  // Print single QR
-                  const printWindow = window.open('', '_blank');
-                  const qrData = generateQRData(selectedQRPallet);
-                  printWindow.document.write(`
-                    <html>
-                      <head>
-                        <title>QR Code - ${selectedQRPallet.ma_pallet}</title>
-                        <style>
-                          body { 
-                            font-family: Arial, sans-serif; 
-                            text-align: center; 
-                            margin: 20px; 
-                          }
-                          .qr-container { 
-                            border: 2px solid #000; 
-                            padding: 20px; 
-                            display: inline-block; 
-                          }
-                          h2 { margin: 0 0 10px 0; }
-                          .info { margin-top: 15px; }
-                        </style>
-                      </head>
-                      <body>
-                        <div class="qr-container">
-                          <h2>${selectedQRPallet.ma_pallet}</h2>
-                          <div id="qr-placeholder">[QR Code sẽ được tạo ở đây]</div>
-                          <div class="info">
-                            <p><strong>Sản phẩm:</strong> ${selectedQRPallet.san_pham.ten_san_pham}</p>
-                            <p><strong>Số lượng:</strong> ${selectedQRPallet.so_thung_con_lai} thùng</p>
-                            <p><strong>Vị trí:</strong> ${selectedQRPallet.vi_tri_kho?.ma_vi_tri || 'N/A'}</p>
-                          </div>
-                        </div>
-                      </body>
-                    </html>
-                  `);
-                  printWindow.document.close();
-                  setTimeout(() => printWindow.print(), 500);
+                  setShowPrintQRModal(false);
+                  setPrintQRData(null);
                 }}
               >
-                <i className="icon-printer"></i>
-                In QR
+                <i className="icon-x"></i>
               </button>
-              
-              <button 
-                className="btn btn-primary"
+            </div>
+            <div className="qr-modal-body" style={{ textAlign: 'center' }}>
+              {printQRData.qr_code_url ? (
+                <img
+                  src={`http://127.0.0.1:8000${printQRData.qr_code_url}`}
+                  alt="QR Code"
+                  style={{ width: 256, height: 256 }}
+                />
+              ) : printQRData.qr_code ? (
+                <QRCodeCanvas value={printQRData.qr_code} size={256} />
+              ) : (
+                <p>Không có dữ liệu QR code.</p>
+              )}
+              <div style={{ marginTop: 16 }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowPrintQRModal(false);
+                    setPrintQRData(null);
+                  }}
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateQRModal && createQRUrl && (
+        <div className="qr-modal">
+          <div className="qr-modal-content">
+            <div className="qr-modal-header">
+              <h3>QR Code - {createQRMaPallet}</h3>
+              <button
+                className="close-button"
                 onClick={() => {
-                  // Download QR as image
-                  const canvas = document.querySelector('.qr-modal canvas');
-                  if (canvas) {
+                  setShowCreateQRModal(false);
+                  setCreateQRUrl('');
+                  setCreateQRMaPallet('');
+                }}
+              >
+                <i className="icon-x"></i>
+              </button>
+            </div>
+            <div className="qr-modal-body" style={{ textAlign: 'center' }}>
+              <img
+                src={createQRUrl}
+                alt="QR Code"
+                style={{ width: 256, height: 256 }}
+                className="qr-print-image"
+              />
+              <div style={{ marginTop: 16 }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowCreateQRModal(false);
+                    setCreateQRUrl('');
+                    setCreateQRMaPallet('');
+                  }}
+                >
+                  Đóng
+                </button>
+                <button
+                  className="btn btn-info"
+                  style={{ marginLeft: 8 }}
+                  onClick={() => {
+                    // Tạo thẻ a ẩn để download ảnh
                     const link = document.createElement('a');
-                    link.download = `QR-${selectedQRPallet.ma_pallet}.png`;
-                    link.href = canvas.toDataURL();
+                    link.href = createQRUrl;
+                    link.download = `${createQRMaPallet || 'qr_code'}.png`;
+                    document.body.appendChild(link);
                     link.click();
-                  }
-                }}
-              >
-                <i className="icon-download"></i>
-                Tải về
-              </button>
+                    document.body.removeChild(link);
+                  }}
+                >
+                  Save QR
+                </button>
+              </div>
             </div>
           </div>
         </div>
