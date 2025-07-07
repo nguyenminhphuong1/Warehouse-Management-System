@@ -9,7 +9,7 @@ class KiemKe(models.Model):
         ('Theo_nhóm', 'Theo nhóm'),
         ('Theo_hạn_sử_dụng', 'Theo hạn sử dụng')
     ])
-    pham_vi_kiem_ke = models.JSONField(default={}, blank=True,)
+    pham_vi_kiem_ke = models.JSONField(default={dict}, blank=True,)
     ngay_kiem_ke = models.DateField(default=timezone.now, blank=True,)
     nguoi_tao = models.CharField(max_length=50, blank=True,)
     danh_sach_nguoi_phu_trach = models.JSONField(default=[], blank=True,)

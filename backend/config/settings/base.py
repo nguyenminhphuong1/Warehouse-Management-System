@@ -135,9 +135,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+# STATICFILES_DIRS = [
+#     BASE_DIR / 'static',
+# ]
 
 # Media files
 MEDIA_URL = '/media/'
@@ -149,11 +149,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        # Không dùng bất kỳ xác thực nào
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -172,7 +171,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    #'EXCEPTION_HANDLER': 'apps.core.utils.exception_handler.custom_exception_handler',
+    # 'EXCEPTION_HANDLER': 'apps.core.utils.exception_handler.custom_exception_handler',
 }
 
 # JWT Settings
@@ -404,7 +403,7 @@ WAREHOUSE_SETTINGS = {
     'QR_CODE_SETTINGS': {
         'version': 1,
         'error_correction': 'M',
-        'box_size': 10,
+        'box_size': 5,
         'border': 4,
     },
     'PALLET_CODE_FORMAT': 'P-{year}-{sequence:03d}',

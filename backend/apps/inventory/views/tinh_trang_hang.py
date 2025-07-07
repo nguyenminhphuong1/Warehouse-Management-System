@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from ..models import TinhTrangHang
 from ..serializers import TinhTrangHangSerializer
 from django_filters.rest_framework import DjangoFilterBackend
@@ -11,7 +11,7 @@ from rest_framework import viewsets, status
 
 class TinhTrangHangViewSet(viewsets.ModelViewSet):
     queryset = TinhTrangHang.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = TinhTrangHangSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['loai_tinh_trang', 'muc_do']

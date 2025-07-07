@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from ..models import Pallet
 from ..serializers import PalletSerializer
 from apps.orders.serializers import LichSuXuatNhapSerializer
@@ -12,7 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 class PalletViewSet(viewsets.ModelViewSet):
     queryset = Pallet.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = PalletSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['san_pham', 'vi_tri_kho', 'nha_cung_cap']
@@ -99,10 +99,26 @@ class PalletViewSet(viewsets.ModelViewSet):
         try:
             pallet = self.get_object()
             nguoi_thuc_hien = request.user
-            vi_tri_moi = request.data.get["vi_tri_moi"]
+            vi_tri_moi = request.data.get("vi_tri_moi")
             if not vi_tri_moi:
                 return Response({"detail": "Vị trí mới là bắt buộc."}, status=400)
             pallet.move_to_position(vi_tri_moi=vi_tri_moi, nguoi_thuc_hien=nguoi_thuc_hien)
             return Response({"message":f"Đã chuyển pallet {pallet.ma_pallet} sang vị trí {vi_tri_moi.ma_vi_tri}."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error":str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    #API lấy ra qr của pallet
+    @swagger_auto_schema(
+        method='get',
+        operation_summary="Lấy ra qr của pallet",
+        operation_description="API lấy qr của pallet",
+        responses={200: openapi.Response(description="Thành công")}
+    )
+    @action(detail=True, methods=['get'], url_path='qr_code')
+    def qr_code(self, request, pk=None):
+        try:
+            pallet = self.get_object()
+            pallet.generate_qr_code()
+            return Response({"qr_code_url": pallet.qr_code.url}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error":str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

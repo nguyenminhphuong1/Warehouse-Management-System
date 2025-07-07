@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from ..models import KhuVuc
 from ..serializers import KhuVucSerializer, ViTriKhoSerializer
 from rest_framework.decorators import action
@@ -10,7 +10,7 @@ from drf_yasg import openapi
 
 class KhuVucViewSet(viewsets.ModelViewSet):
     queryset = KhuVuc.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = KhuVucSerializer
 
     #API lấy ra phần thống kê của khu vực
