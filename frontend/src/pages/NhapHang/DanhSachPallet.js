@@ -47,7 +47,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
     const loadPallets = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/warehouse/pallet/', {
+        const response = await fetch('http://127.0.0.1:8000/api/warehouse/pallet/get_dict/', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -90,9 +90,10 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       result = result.filter(pallet => 
-        pallet.ma_pallet.toLowerCase().includes(searchLower) ||
-        pallet.san_pham.ten_san_pham.toLowerCase().includes(searchLower) ||
-        pallet.nguoi_tao.toLowerCase().includes(searchLower)
+        (pallet.ma_pallet ? pallet.ma_pallet.toLowerCase() : '').includes(searchLower) ||
+        (pallet.ten ? pallet.ten.toLowerCase() : '') .includes(searchLower) ||
+        (pallet.san_pham && pallet.san_pham.ten ? pallet.san_pham.ten.toLowerCase() : '').includes(searchLower) ||
+        (pallet.ghi_chu ? pallet.ghi_chu.toLowerCase() : '').includes(searchLower)
       );
     }
 
@@ -106,7 +107,8 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
 
     if (filters.san_pham) {
       result = result.filter(pallet => 
-        pallet.san_pham.nhom_hang.toLowerCase().includes(filters.san_pham.toLowerCase())
+        (pallet.ten ? pallet.ten.toLowerCase() : '').includes(filters.san_pham.toLowerCase()) ||
+        (pallet.san_pham && pallet.san_pham.ten ? pallet.san_pham.ten.toLowerCase() : '').includes(filters.san_pham.toLowerCase())
       );
     }
 
@@ -127,11 +129,11 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
 
       // Handle nested properties
       if (sorting.field === 'san_pham') {
-        aValue = a.san_pham.ten_san_pham;
-        bValue = b.san_pham.ten_san_pham;
+        aValue = a.san_pham.ten;
+        bValue = b.san_pham.ten;
       } else if (sorting.field === 'vi_tri') {
-        aValue = a.vi_tri_kho?.ma_vi_tri || '';
-        bValue = b.vi_tri_kho?.ma_vi_tri || '';
+        aValue = a.vi_tri_kho || '';
+        bValue = b.vi_tri_kho || '';
       }
 
       // Handle dates
@@ -272,7 +274,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
     return JSON.stringify({
       type: 'pallet',
       ma_pallet: pallet.ma_pallet,
-      san_pham: pallet.san_pham.ten_san_pham,
+      san_pham: pallet.san_pham.ten,
       so_thung: pallet.so_thung_con_lai,
       han_su_dung: pallet.han_su_dung,
       vi_tri: pallet.vi_tri_kho?.ma_vi_tri,
@@ -316,7 +318,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
               <i className="icon-layers"></i>
             </div>
             <div className="stat-content">
-              <h3>{pallets.length}</h3>
+            <h3>{pallets.length}</h3>
               <p>Tổng pallet</p>
             </div>
           </div>
@@ -365,7 +367,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
             <i className="icon-search"></i>
             <input
               type="text"
-              placeholder="Tìm kiếm theo mã pallet, sản phẩm, người tạo..."
+              placeholder="Tìm kiếm theo mã pallet, sản phẩm, ghi chú..."
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
             />
@@ -396,7 +398,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
           
           <input
             type="text"
-            placeholder="Nhóm hàng..."
+            placeholder="Tên sản phẩm..."
             value={filters.san_pham}
             onChange={(e) => setFilters(prev => ({ ...prev, san_pham: e.target.value }))}
           />
@@ -468,8 +470,8 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
               </th>
               <th>Mã Pallet</th>
               <th>Sản phẩm</th>
-              <th>Nhà cung cấp</th>
               <th>Vị trí</th>
+              <th>Ghi chú</th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -484,9 +486,9 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                   />
                 </td>
                 <td>{pallet.ma_pallet}</td>
-                <td>{pallet.san_pham?.ten_san_pham}</td>
-                <td>{pallet.nha_cung_cap?.ten_nha_cung_cap}</td>
-                <td>{pallet.vi_tri_kho?.ma_vi_tri}</td>
+                <td>{pallet.san_pham.ten}</td>
+                <td>{pallet.vi_tri_kho}</td>
+                <td>{pallet.ghi_chu}</td>
                 <td>
                   <div className="action-buttons">
                     <button
@@ -674,7 +676,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                       };
                       let displayValue = value;
                       if (typeof value === 'object' && value !== null) {
-                        if (value.ten_san_pham) displayValue = value.ten_san_pham;
+                        if (value.san_pham.ten) displayValue = value.san_pham.ten;
                         else if (value.ten_nha_cung_cap) displayValue = value.ten_nha_cung_cap;
                         else if (value.ma_vi_tri) displayValue = value.ma_vi_tri;
                         else displayValue = JSON.stringify(value);
