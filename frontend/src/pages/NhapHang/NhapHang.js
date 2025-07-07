@@ -162,7 +162,7 @@ const NhapHang = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="statistics-section">
+      {/* <div className="statistics-section">
         <div className="stats-grid">
           <div className="stat-card total">
             <div className="stat-icon">
@@ -224,7 +224,7 @@ const NhapHang = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Navigation Tabs */}
       <div className="tabs-section">

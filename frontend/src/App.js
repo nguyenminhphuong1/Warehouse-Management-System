@@ -8,6 +8,8 @@ import { AuthProvider } from './context/AuthContext';
 import LoginForm from './components/auth/LoginForm';
 import './styles/auth.css';
 import { useAuth } from './context/AuthContext';
+// import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// import QRDisplay from './components/qr/QRDisplay';
 
 // Import Common Components và Styles
 import './components/common/styles.css';
@@ -30,6 +32,8 @@ import {
 // Import Module Components
 import XuatHang from './pages/XuatHang/XuatHang';
 import NhapHang from './pages/NhapHang/NhapHang';
+import QRDisplay from './components/qr/QRDisplay';
+import Dashboard from './pages/Dashboard/Dashboard';
 // Temporary Context Providers (tạm thời)
 // const AuthContext = React.createContext();
 // const AuthProvider = ({ children }) => {
@@ -69,109 +73,7 @@ const ProtectedRoute = ({ children, module, action }) => {
 };
 
 // Temporary page components
-const Dashboard = () => (
-  <div style={{ padding: '20px' }}>
-    <h1>🏭 Dashboard - Warehouse Management System</h1>
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-      gap: '20px',
-      marginTop: '20px'
-    }}>
-      <div style={{
-        padding: '20px',
-        background: 'var(--surface-color)',
-        borderRadius: '8px',
-        border: '1px solid var(--border-color)',
-        boxShadow: 'var(--shadow-sm)'
-      }}>
-        <h3>📦 Tổng số Pallet</h3>
-        <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary-600)', marginTop: '10px' }}>
-          1,234
-        </div>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '5px' }}>
-          +12% so với tháng trước
-        </p>
-      </div>
-      
-      <div style={{
-        padding: '20px',
-        background: 'var(--surface-color)',
-        borderRadius: '8px',
-        border: '1px solid var(--border-color)',
-        boxShadow: 'var(--shadow-sm)'
-      }}>
-        <h3>🚚 Đơn xuất hôm nay</h3>
-        <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--success-600)', marginTop: '10px' }}>
-          47
-        </div>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '5px' }}>
-          8 đơn đang xử lý
-        </p>
-      </div>
-      
-      <div style={{
-        padding: '20px',
-        background: 'var(--surface-color)',
-        borderRadius: '8px',
-        border: '1px solid var(--border-color)',
-        boxShadow: 'var(--shadow-sm)'
-      }}>
-        <h3>📍 Vị trí trống</h3>
-        <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--warning-600)', marginTop: '10px' }}>
-          156
-        </div>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '5px' }}>
-          89% đã sử dụng
-        </p>
-      </div>
-      
-      <div style={{
-        padding: '20px',
-        background: 'var(--surface-color)',
-        borderRadius: '8px',
-        border: '1px solid var(--border-color)',
-        boxShadow: 'var(--shadow-sm)'
-      }}>
-        <h3>⚠️ Cảnh báo</h3>
-        <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--error-600)', marginTop: '10px' }}>
-          3
-        </div>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '5px' }}>
-          Cần kiểm tra ngay
-        </p>
-      </div>
-    </div>
-
-    <div style={{ marginTop: '30px' }}>
-      <h2>⚡ Hoạt động gần đây</h2>
-      <div style={{
-        background: 'var(--surface-color)',
-        borderRadius: '8px',
-        border: '1px solid var(--border-color)',
-        padding: '20px',
-        marginTop: '10px'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <span>📦 Nhập pallet mới #P001234</span>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>5 phút trước</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <span>🚚 Hoàn thành đơn xuất #DX001122</span>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>12 phút trước</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <span>✅ Kiểm kê khu vực A-01</span>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>25 phút trước</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>🔧 Bảo trì thiết bị tại B-05</span>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>1 giờ trước</span>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+// XÓA toàn bộ định nghĩa const Dashboard = ... (component dashboard cũ)
 
 const Login = () => (
   <div style={{ 
@@ -645,6 +547,7 @@ const App = () => {
 
                           {/* Fallback route */}
                           <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                        
                         </Routes>
                       </div>
                   </ToastProvider>

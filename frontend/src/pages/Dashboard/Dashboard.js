@@ -1,8 +1,12 @@
 // src/pages/Dashboard/Dashboard.js
 
 import React, { useState, useEffect } from 'react';
-import DashboardWidgets from './DashboardWidgets';
+// import DashboardWidgets from './DashboardWidgets';
 import './Dashboard.css';
+
+import { Pie, Line } from 'react-chartjs-2';
+import { Chart, ArcElement, Tooltip as ChartTooltip, Legend as ChartLegend, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js';
+Chart.register(ArcElement, ChartTooltip, ChartLegend, CategoryScale, LinearScale, PointElement, LineElement);
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({
@@ -193,6 +197,48 @@ const Dashboard = () => {
     return colors[type] || '#6c757d';
   };
 
+  // Thêm dữ liệu chartjs
+  const warehouseInventoryData = [
+    { name: 'Khu vực A', value: 40 },
+    { name: 'Khu vực B', value: 30 },
+    { name: 'Khu vực C', value: 20 },
+    { name: 'Khu vực D', value: 10 },
+  ];
+
+  const revenueData = [
+    { month: 'Tháng 1', revenue: 1200 },
+    { month: 'Tháng 2', revenue: 1500 },
+    { month: 'Tháng 3', revenue: 1800 },
+    { month: 'Tháng 4', revenue: 2000 },
+    { month: 'Tháng 5', revenue: 2200 },
+    { month: 'Tháng 6', revenue: 2500 },
+  ];
+
+  const warehouseInventoryPieData = {
+    labels: warehouseInventoryData.map(d => d.name),
+    datasets: [
+      {
+        data: warehouseInventoryData.map(d => d.value),
+        backgroundColor: ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50'],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const revenueLineData = {
+    labels: revenueData.map(d => d.month),
+    datasets: [
+      {
+        label: 'Doanh thu',
+        data: revenueData.map(d => d.revenue),
+        fill: false,
+        borderColor: '#007bff',
+        backgroundColor: '#007bff',
+        tension: 0.4,
+      },
+    ],
+  };
+
   if (loading) {
     return (
       <div className="dashboard-loading">
@@ -292,56 +338,17 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quick Actions & Alerts */}
-        <div className="action-alerts-section">
-          {/* Quick Actions */}
-          <div className="quick-actions">
-            <h2>Thao tác nhanh</h2>
-            <div className="action-cards">
-              {dashboardData.quickActions.map((action, index) => (
-                <div 
-                  key={index}
-                  className="action-card"
-                  onClick={() => window.location.href = action.route}
-                >
-                  <div className="action-icon" style={{ backgroundColor: action.color }}>
-                    <i className={`icon-${action.icon}`}></i>
-                  </div>
-                  <div className="action-content">
-                    <h4>{action.title}</h4>
-                    <p>{action.description}</p>
-                    {action.count > 0 && (
-                      <div className="action-badge">
-                        {action.count}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+
+        {/* Thay thế phần render biểu đồ: */}
+        <div className="dashboard-charts">
+          <div className="dashboard-chart-card">
+            <h2>Số lượng tồn kho theo khu vực</h2>
+            <Pie data={warehouseInventoryPieData} width={320} height={220}/>
           </div>
 
-          {/* Alerts */}
-          <div className="alerts-section">
-            <h2>Cảnh báo & Thông báo</h2>
-            <div className="alerts-list">
-              {dashboardData.alerts.map(alert => (
-                <div key={alert.id} className={`alert-item ${alert.type} ${alert.priority}`}>
-                  <div className="alert-icon">
-                    <i className={`icon-${alert.type === 'warning' ? 'alert-triangle' : 
-                                             alert.type === 'success' ? 'check-circle' : 'info'}`}></i>
-                  </div>
-                  <div className="alert-content">
-                    <h4>{alert.title}</h4>
-                    <p>{alert.message}</p>
-                    <span className="alert-time">{getTimeAgo(alert.timestamp)}</span>
-                  </div>
-                  <div className="alert-actions">
-                    <button className="btn-view">Xem</button>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="dashboard-chart-card">
+            <h2>Doanh thu theo tháng</h2>
+            <Line data={revenueLineData} width={320} height={220} />
           </div>
         </div>
 
@@ -419,8 +426,9 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Dashboard Widgets */}
-        <DashboardWidgets />
+      
+
+        
       </div>
     </div>
   );

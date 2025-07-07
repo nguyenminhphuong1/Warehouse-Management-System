@@ -524,14 +524,12 @@
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  /* background: #1976d2; fallback, sẽ bị override bởi btn-info */
   color: #fff;
+  background: #1976d2;
   transition: background 0.2s, transform 0.2s;
-  min-height: 36px;
-  min-width: 0;
-  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
   width: auto;
 }
+
 
 .btn-icon.btn-info {
   /* background: #1976d2; */
