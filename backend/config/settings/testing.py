@@ -1,26 +1,22 @@
 from .base import *
-from dotenv import load_dotenv
-load_dotenv()
+from decouple import config
 
-
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', config('DJANGO_SETTINGS_MODULE'))
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'warehouse_db'),
-        'USER': os.environ.get('DB_USER', 'warehouse_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'password'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
-        'OPTIONS': {
-            'options': '-c default_transaction_isolation=serializable'
-        }
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
     }
 }
+
 # Optional: Disable some heavy settings during test
 CACHES['default']['BACKEND'] = 'django.core.cache.backends.locmem.LocMemCache'
 CELERY_TASK_ALWAYS_EAGER = True  # Không cần Redis khi test

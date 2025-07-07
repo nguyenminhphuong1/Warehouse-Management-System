@@ -8,8 +8,6 @@ import { AuthProvider } from './context/AuthContext';
 import LoginForm from './components/auth/LoginForm';
 import './styles/auth.css';
 import { useAuth } from './context/AuthContext';
-// import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import QRDisplay from './components/qr/QRDisplay';
 
 // Import Common Components và Styles
 import './components/common/styles.css';
@@ -34,31 +32,6 @@ import XuatHang from './pages/XuatHang/XuatHang';
 import NhapHang from './pages/NhapHang/NhapHang';
 import QRDisplay from './components/qr/QRDisplay';
 import Dashboard from './pages/Dashboard/Dashboard';
-// Temporary Context Providers (tạm thời)
-// const AuthContext = React.createContext();
-// const AuthProvider = ({ children }) => {
-//   const [user, setUser] = useState({
-//     id: 1,
-//     name: 'Admin User',
-//     email: 'admin@warehouse.com',
-//     role: 'admin'
-//   });
-//   const [loading, setLoading] = useState(false);
-//
-//   return (
-//     <AuthContext.Provider value={{ user, loading, setUser }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// const useAuth = () => {
-//   const context = React.useContext(AuthContext);
-//   if (!context) {
-//     throw new Error('useAuth must be used within AuthProvider');
-//   }
-//   return context;
-// };
 
 // Temporary Context Providers
 const WarehouseProvider = ({ children }) => children;
@@ -67,11 +40,19 @@ const SettingsProvider = ({ children }) => children;
 const PermissionProvider = ({ children }) => children;
 
 // Temporary ProtectedRoute
-const ProtectedRoute = ({ children, module, action }) => {
-  // Tạm thời cho phép tất cả
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return children;
 };
-
 // Temporary page components
 // XÓA toàn bộ định nghĩa const Dashboard = ... (component dashboard cũ)
 
@@ -91,7 +72,7 @@ const Login = () => (
       width: '100%',
       maxWidth: '400px'
     }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>🏭 Warehouse System</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '30px' }}> 3c Warehouse System</h2>
       <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '30px' }}>
         Đăng nhập để tiếp tục
       </p>
@@ -179,7 +160,7 @@ const checkSystemHealth = async () => {
 
 // Layout Component with Common Components
 const AppLayout = ({ children }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [systemHealth, setSystemHealth] = useState(null);
@@ -547,7 +528,6 @@ const App = () => {
 
                           {/* Fallback route */}
                           <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                        
                         </Routes>
                       </div>
                   </ToastProvider>
