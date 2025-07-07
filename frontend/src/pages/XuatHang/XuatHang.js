@@ -18,6 +18,8 @@ const XuatHang = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('danh-sach-don');
+  const [orderList, setOrderList] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   // State cho module xuất hàng
   const [exportData, setExportData] = useState({
@@ -47,80 +49,76 @@ const XuatHang = () => {
     loadExportData();
   }, []);
 
+  // Khi vào tab 'danh-sach-don', trigger gọi 2 API song song
+  useEffect(() => {
+    if (activeTab === 'danh-sach-don') {
+      fetchOrdersAndStores();
+    }
+    // eslint-disable-next-line
+  }, [activeTab]);
+
+  const fetchOrdersAndStores = async () => {
+    setLoadingOrders(true);
+    try {
+      // Gọi song song
+      const [storeRes, orderRes] = await Promise.all([
+        fetch('http://127.0.0.1:8000/api/orders/cuahang/', {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }),
+        fetch('http://127.0.0.1:8000/api/orders/donxuat/', {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+      ]);
+      if (!storeRes.ok || !orderRes.ok) throw new Error('Lỗi lấy dữ liệu');
+      const storeData = await storeRes.json();
+      const orderData = await orderRes.json();
+      const stores = (storeData.results || storeData).map(s => ({ id: s.id, ten_cua_hang: s.ten_cua_hang }));
+      const storeMap = {};
+      stores.forEach(s => { storeMap[s.id] = s.ten_cua_hang; });
+      const ordersRaw = orderData.results || orderData;
+      // Lọc và nối dữ liệu
+      const orders = ordersRaw
+        .filter(o => storeMap[o.cua_hang])
+        .map(o => ({
+          ma_don: o.ma_don,
+          cua_hang: o.cua_hang,
+          ten_cua_hang: storeMap[o.cua_hang],
+          ngay_tao: o.ngay_tao,
+          ngay_giao: o.ngay_giao,
+          ghi_chu: o.ghi_chu
+        }));
+      setOrderList(orders);
+    } catch (err) {
+      setOrderList([]);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
   const loadExportData = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock data
-      const mockOrders = [
-        {
-          id: 'DX001',
-          code: 'DX-2025-001',
-          storeName: 'Cửa hàng Hà Nội 1',
-          storeAddress: '123 Phố Huế, Hai Bà Trưng, Hà Nội',
-          totalItems: 25,
-          totalQuantity: 150,
-          status: 'pending',
-          priority: 'high',
-          createdDate: '2025-01-15',
-          requestedDate: '2025-01-16',
-          estimatedTime: 120,
-          items: [
-            { productId: 'SP001', productName: 'Sản phẩm A', quantity: 50, unit: 'Thùng' },
-            { productId: 'SP002', productName: 'Sản phẩm B', quantity: 30, unit: 'Thùng' },
-            { productId: 'SP003', productName: 'Sản phẩm C', quantity: 70, unit: 'Thùng' }
-          ]
-        },
-        {
-          id: 'DX002',
-          code: 'DX-2025-002',
-          storeName: 'Cửa hàng TP.HCM 2',
-          storeAddress: '456 Nguyễn Huệ, Quận 1, TP.HCM',
-          totalItems: 18,
-          totalQuantity: 95,
-          status: 'in_progress',
-          priority: 'medium',
-          createdDate: '2025-01-15',
-          requestedDate: '2025-01-17',
-          estimatedTime: 90,
-          progress: 35,
-          items: [
-            { productId: 'SP004', productName: 'Sản phẩm D', quantity: 45, unit: 'Thùng' },
-            { productId: 'SP005', productName: 'Sản phẩm E', quantity: 50, unit: 'Thùng' }
-          ]
-        },
-        {
-          id: 'DX003',
-          code: 'DX-2025-003',
-          storeName: 'Cửa hàng Đà Nẵng 1',
-          storeAddress: '789 Trần Phú, Hải Châu, Đà Nẵng',
-          totalItems: 32,
-          totalQuantity: 200,
-          status: 'completed',
-          priority: 'low',
-          createdDate: '2025-01-14',
-          requestedDate: '2025-01-15',
-          completedDate: '2025-01-15',
-          estimatedTime: 150,
-          actualTime: 135,
-          items: [
-            { productId: 'SP006', productName: 'Sản phẩm F', quantity: 80, unit: 'Thùng' },
-            { productId: 'SP007', productName: 'Sản phẩm G', quantity: 60, unit: 'Thùng' },
-            { productId: 'SP008', productName: 'Sản phẩm H', quantity: 60, unit: 'Thùng' }
-          ]
-        }
-      ];
+      // TODO: Gọi API thực tế để lấy dữ liệu đơn xuất hàng ở đây
+      // Ví dụ:
+      // const response = await fetch('/api/export-orders');
+      // const data = await response.json();
+      // setExportData(prev => ({ ...prev, orders: data.orders, ... }));
 
+      // Hiện tại để orders là mảng rỗng
       setExportData(prev => ({
         ...prev,
-        orders: mockOrders,
+        orders: [],
         stats: {
-          totalOrders: mockOrders.length,
-          pendingOrders: mockOrders.filter(o => o.status === 'pending').length,
-          inProgressOrders: mockOrders.filter(o => o.status === 'in_progress').length,
-          completedOrders: mockOrders.filter(o => o.status === 'completed').length
+          totalOrders: 0,
+          pendingOrders: 0,
+          inProgressOrders: 0,
+          completedOrders: 0
         }
       }));
 
@@ -299,55 +297,86 @@ const XuatHang = () => {
 
       {/* Content */}
       <div className="xuat-hang-content">
-        <Routes>
-          <Route 
-            path="/" 
-            element={
-              <DanhSachDon 
-                orders={exportData.orders}
-                onStartExport={handleStartExport}
-                onCompleteExport={handleCompleteExport}
-                exportProgress={exportData.exportProgress}
-              />
-            } 
-          />
-          <Route 
-            path="/danh-sach-don" 
-            element={
-              <DanhSachDon 
-                orders={exportData.orders}
-                onStartExport={handleStartExport}
-                onCompleteExport={handleCompleteExport}
-                exportProgress={exportData.exportProgress}
-              />
-            } 
-          />
-          <Route 
-            path="/xuat-hang-chi-tiet/*" 
-            element={
-              <XuatHangChiTiet 
-                orders={exportData.orders}
-                exportProgress={exportData.exportProgress}
-              />
-            } 
-          />
-          <Route 
-            path="/sap-xep-thu-tu" 
-            element={
-              <SapXepThuTu 
-                orders={exportData.orders.filter(o => o.status === 'pending')}
-              />
-            } 
-          />
-          <Route 
-            path="/in-qr-don" 
-            element={
-              <InQRDon 
-                orders={exportData.orders}
-              />
-            } 
-          />
-        </Routes>
+        {activeTab === 'danh-sach-don' ? (
+          <div className="order-list-table-container">
+            <table className="order-list-table">
+              <thead>
+                <tr>
+                  <th>Mã đơn</th>
+                  <th>Cửa hàng</th>
+                  <th>Ngày tạo</th>
+                  <th>Ngày giao</th>
+                  <th>Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadingOrders ? (
+                  <tr><td colSpan={5} style={{textAlign:'center'}}>Đang tải dữ liệu...</td></tr>
+                ) : orderList.length === 0 ? (
+                  <tr><td colSpan={5} style={{textAlign:'center'}}>Không có dữ liệu</td></tr>
+                ) : orderList.map((order, idx) => (
+                  <tr key={idx}>
+                    <td>{order.ma_don}</td>
+                    <td>{order.ten_cua_hang}</td>
+                    <td>{order.ngay_tao}</td>
+                    <td>{order.ngay_giao}</td>
+                    <td>{order.ghi_chu}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+                <DanhSachDon 
+                  orders={exportData.orders}
+                  onStartExport={handleStartExport}
+                  onCompleteExport={handleCompleteExport}
+                  exportProgress={exportData.exportProgress}
+                />
+              } 
+            />
+            <Route 
+              path="/danh-sach-don" 
+              element={
+                <DanhSachDon 
+                  orders={exportData.orders}
+                  onStartExport={handleStartExport}
+                  onCompleteExport={handleCompleteExport}
+                  exportProgress={exportData.exportProgress}
+                />
+              } 
+            />
+            <Route 
+              path="/xuat-hang-chi-tiet/*" 
+              element={
+                <XuatHangChiTiet 
+                  orders={exportData.orders}
+                  exportProgress={exportData.exportProgress}
+                />
+              } 
+            />
+            <Route 
+              path="/sap-xep-thu-tu" 
+              element={
+                <SapXepThuTu 
+                  orders={exportData.orders.filter(o => o.status === 'pending')}
+                />
+              } 
+            />
+            <Route 
+              path="/in-qr-don" 
+              element={
+                <InQRDon 
+                  orders={exportData.orders}
+                />
+              } 
+            />
+          </Routes>
+        )}
       </div>
     </div>
   );

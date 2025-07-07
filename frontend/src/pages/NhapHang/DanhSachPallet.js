@@ -9,7 +9,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPallets, setSelectedPallets] = useState([]);
-  const [showBulkActions, setShowBulkActions] = useState(false);
+  //const [showBulkActions, setShowBulkActions] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedQRPallet, setSelectedQRPallet] = useState(null);
   const [printQRData, setPrintQRData] = useState(null);
@@ -17,6 +17,8 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
   const [showCreateQRModal, setShowCreateQRModal] = useState(false);
   const [createQRUrl, setCreateQRUrl] = useState('');
   const [createQRMaPallet, setCreateQRMaPallet] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Filters and Sorting
   const [filters, setFilters] = useState({
@@ -191,17 +193,19 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
 
   // Handle selection
   const handleSelectPallet = (palletId) => {
+    console.log('Chọn pallet:', palletId);
     setSelectedPallets(prev => {
       const newSelection = prev.includes(palletId)
         ? prev.filter(id => id !== palletId)
         : [...prev, palletId];
       
-      setShowBulkActions(newSelection.length > 0);
+      //setShowBulkActions(newSelection.length > 0);
       return newSelection;
     });
   };
 
   const handleSelectAll = () => {
+    console.log('Chọn tất cả pallet trang hiện tại');
     const allIds = paginatedPallets.map(p => p.id);
     const allSelected = allIds.every(id => selectedPallets.includes(id));
     
@@ -215,52 +219,84 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
   // Handle bulk actions
   const handleBulkExport = () => {
     const selectedData = pallets.filter(p => selectedPallets.includes(p.id));
-    // Export logic here
     console.log('Exporting:', selectedData);
   };
 
   const handleBulkPrint = () => {
     const selectedData = pallets.filter(p => selectedPallets.includes(p.id));
-    // Print logic here
     console.log('Printing:', selectedData);
   };
 
-  const handleBulkDelete = async () => {
-    if (window.confirm(`Bạn có chắc muốn xóa ${selectedPallets.length} pallet đã chọn?`)) {
-      try {
-        console.log('Bulk deleting pallets:', selectedPallets); // DEBUG
-        const response = await fetch('http://127.0.0.1:8000/warehouse/pallet/bulk-delete/', {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({ pallet_ids: selectedPallets })
-        });
+  // const handleBulkDelete = async () => {
+  //   if (window.confirm(`Bạn có chắc muốn xóa ${selectedPallets.length} pallet đã chọn?`)) {
+  //     try {
+  //       console.log('Bulk deleting pallets:', selectedPallets); // DEBUG
+  //       const response = await fetch('http://127.0.0.1:8000/warehouse/pallet/bulk-delete/', {
+  //         method: 'DELETE',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //         },
+  //         body: JSON.stringify({ pallet_ids: selectedPallets })
+  //       });
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
         
-        // Remove from local state after successful API call
-        setPallets(prev => prev.filter(p => !selectedPallets.includes(p.id)));
-        setSelectedPallets([]);
-        setShowBulkActions(false);
+  //       // Remove from local state after successful API call
+  //       setPallets(prev => prev.filter(p => !selectedPallets.includes(p.id)));
+  //       setSelectedPallets([]);
+  //       setShowBulkActions(false);
         
-        alert('Đã xóa thành công các pallet đã chọn');
-      } catch (err) {
-        console.error('Error deleting pallets:', err); // DEBUG
-        alert('Có lỗi xảy ra khi xóa pallet');
+  //       alert('Đã xóa thành công các pallet đã chọn');
+  //     } catch (err) {
+  //       console.error('Error deleting pallets:', err); // DEBUG
+  //       alert('Có lỗi xảy ra khi xóa pallet');
+  //     }
+  //   }
+  // };
+
+  // Xử lý chọn 1 pallet (single select)
+  const handleSelectSinglePallet = (palletId) => {
+    setSelectedId(prev => prev === palletId ? null : palletId);
+  };
+
+  // Sửa hàm handleDeletePallet nhận vào id
+  const handleDeletePallet = async (id) => {
+    console.log('Thực hiện xoá pallet:', id);
+    if (!id) return;
+    try {
+      const confirmed = window.confirm('Bạn có chắc chắn muốn xoá pallet này?');
+      if (!confirmed) {
+        console.log('Huỷ xoá pallet:', id);
+        return;
       }
+      const response = await fetch(`http://127.0.0.1:8000/api/warehouse/pallet/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) throw new Error('Lỗi xoá pallet');
+      setPallets(prev => prev.filter(p => p.id !== id));
+      alert('Đã xoá pallet thành công!');
+      console.log('Đã xoá pallet thành công:', id);
+    } catch (err) {
+      alert('Có lỗi khi xoá pallet!');
+      console.error('Lỗi khi xoá pallet:', err);
     }
   };
 
   // Handle pagination
   const handlePageChange = (page) => {
+    console.log('Chuyển trang:', page);
     setPagination(prev => ({ ...prev, currentPage: page }));
   };
 
   const handlePageSizeChange = (size) => {
+    console.log('Đổi số dòng/trang:', size);
     setPagination(prev => ({
       ...prev,
       pageSize: parseInt(size),
@@ -416,7 +452,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
       </div>
 
       {/* Bulk Actions */}
-      {showBulkActions && (
+      {/* {showBulkActions && (
         <div className="bulk-actions">
           <div className="selection-info">
             <span>Đã chọn {selectedPallets.length} pallet</span>
@@ -454,7 +490,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
             )}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Table */}
       <div className="table-container">
@@ -494,6 +530,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                     <button
                       className="btn-icon btn-info"
                       onClick={async (e) => {
+                        console.log('Xem chi tiết pallet:', pallet.id);
                         e.stopPropagation();
                         try {
                           const response = await fetch(`http://127.0.0.1:8000/api/warehouse/pallet/${pallet.id}/`, {
@@ -508,8 +545,10 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                           const data = await response.json();
                           setSelectedQRPallet(data);
                           setShowQRModal(true);
+                          console.log('Đã xem chi tiết pallet:', pallet.id);
                         } catch (err) {
                           alert('Không lấy được chi tiết pallet!');
+                          console.error('Lỗi lấy chi tiết pallet:', err);
                         }
                       }}
                       title="Xem chi tiết"
@@ -519,6 +558,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                     <button
                       className="btn-icon btn-info"
                       onClick={async (e) => {
+                        console.log('Xem QR code pallet:', pallet.id);
                         e.stopPropagation();
                         try {
                           const response = await fetch(`http://127.0.0.1:8000/api/warehouse/pallet/${pallet.id}/qr_code/`, {
@@ -535,16 +575,26 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                             setCreateQRUrl(`http://127.0.0.1:8000${data.qr_code_url}`);
                             setCreateQRMaPallet(pallet.ma_pallet || data.ma_pallet || '');
                             setShowCreateQRModal(true);
+                            console.log('Đã xem và in QR code pallet:', pallet.id);
                           } else {
                             alert('Không nhận được đường dẫn QR code!');
+                            console.error('Không nhận được đường dẫn QR code!');
                           }
                         } catch (err) {
                           alert('Lấy QR Code thất bại!');
+                          console.error('Lấy QR Code thất bại:', err);
                         }
                       }}
                       title="Xem và in QR Code cho pallet này"
                     >
                       <i className="icon-qr-code"></i> QR Code
+                    </button>
+                    <button
+                      className="btn-icon btn-danger"
+                      onClick={() => handleDeletePallet(pallet.id)}
+                      title="Xoá pallet này"
+                    >
+                      <i className="icon-trash-2"></i> Xoá
                     </button>
                   </div>
                 </td>
@@ -697,7 +747,10 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                   <div style={{ marginTop: 16, textAlign: 'center' }}>
                     <button
                       className="btn btn-info"
-                      onClick={() => window.open(`http://127.0.0.1:8000${selectedQRPallet.qr_code_url}`, '_blank')}
+                      onClick={() => {
+                        console.log('Tạo QR từ URL:', selectedQRPallet.qr_code_url);
+                        window.open(`http://127.0.0.1:8000${selectedQRPallet.qr_code_url}`, '_blank');
+                      }}
                     >
                       Tạo QR
                     </button>
