@@ -50,6 +50,11 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
 
   const [apiError, setApiError] = useState('');
 
+  // Map lưu thông tin sản phẩm và nhóm hàng
+  const [productGroupMap, setProductGroupMap] = useState({ products: [], groups: [] });
+  // Map lưu điều kiện validate (map2)
+  const [validateCondition, setValidateCondition] = useState({});
+
   // Auto-calculate values when form data changes
   useEffect(() => {
     const weight = parseFloat(formData.trong_luong_thung) * parseInt(formData.so_thung_ban_dau) || 0;
@@ -120,33 +125,52 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
     }
   };
 
-  // Fetch products from API when dropdown is focused
-  const handleProductDropdownFocus = () => {
-    if (products.length === 0 && !productsLoading) {
+  // Fetch products & groups song song khi dropdown sản phẩm được focus
+  const handleProductDropdownFocus = async () => {
+    if ((productGroupMap.products.length === 0 || productGroupMap.groups.length === 0) && !productsLoading) {
       setProductsLoading(true);
       setProductsError('');
-      console.log('Fetching products...');
-      api.get('/warehouse/sanpham/')
-        .then(res => {
-          const data = res.data;
-          console.log('Products data:', data);
-          setProducts(Array.isArray(data) ? data : (data.results || []));
-          setProductsLoading(false);
-        })
-        .catch((err) => {
-          setProductsError('Không thể tải sản phẩm');
-          setProductsLoading(false);
-          console.error('Product fetch error:', err);
-        });
+      try {
+        const [productsRes, groupsRes] = await Promise.all([
+          api.get('/warehouse/sanpham/'),
+          api.get('/warehouse/nhomhang/')
+        ]);
+        const productsData = Array.isArray(productsRes.data) ? productsRes.data : (productsRes.data.results || []);
+        const groupsData = Array.isArray(groupsRes.data) ? groupsRes.data : (groupsRes.data.results || []);
+        setProducts(productsData);
+        setProductGroupMap({ products: productsData, groups: groupsData });
+        setProductsLoading(false);
+      } catch (err) {
+        setProductsError('Không thể tải sản phẩm hoặc nhóm hàng');
+        setProductsLoading(false);
+        console.error('Product/group fetch error:', err);
+      }
     }
   };
 
+  // Khi chọn sản phẩm, lấy điều kiện nhóm hàng tương ứng
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => {
       if (name === 'san_pham') {
-        const product = products.find(p => String(p.id) === value);
+        const product = (productGroupMap.products.length ? productGroupMap.products : products).find(p => String(p.id) === value);
         setSelectedProduct(product);
+        // Lấy điều kiện nhóm hàng
+        let nhomHangCondition = {};
+        if (product && product.nhom_hang) {
+          const group = (productGroupMap.groups.length ? productGroupMap.groups : []).find(g => String(g.id) === String(product.nhom_hang));
+          if (group) {
+            nhomHangCondition = {
+              nhom_hang: group.id,
+              ten_nhom: group.ten_nhom,
+              yeu_cau_nhiet_do_min: group.yeu_cau_nhiet_do_min,
+              yeu_cau_nhiet_do_max: group.yeu_cau_nhiet_do_max,
+              yeu_cau_do_am_min: group.yeu_cau_do_am_min,
+              yeu_cau_do_am_max: group.yeu_cau_do_am_max
+            };
+          }
+        }
+        setValidateCondition(prev => ({ ...prev, ...nhomHangCondition }));
         // Auto-fill product-related fields
         if (product) {
           return {
@@ -270,11 +294,30 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
     }
   };
 
-  const handleLocationSelect = (position) => {
+  // Khi xác nhận vị trí pallet, lấy điều kiện khu vực
+  const handleLocationSelect = async (position) => {
     setFormData(prev => ({ ...prev, vi_tri_kho: position }));
     setShowLocationSelector(false);
     if (errors.vi_tri_kho) {
       setErrors(prev => ({ ...prev, vi_tri_kho: '' }));
+    }
+    // Gọi API khu vực lấy điều kiện
+    if (position && position.khu_vuc_id) {
+      try {
+        const res = await api.get(`/warehouse/khuvuc/${position.khu_vuc_id}/`);
+        const data = res.data;
+        setValidateCondition(prev => ({
+          ...prev,
+          khu_vuc_id: data.id,
+          khu_vuc_ten: data.ten_khu_vuc,
+          nhiet_do_min: data.nhiet_do_min,
+          nhiet_do_max: data.nhiet_do_max,
+          do_am_min: data.do_am_min,
+          do_am_max: data.do_am_max
+        }));
+      } catch (err) {
+        console.error('Lỗi lấy điều kiện khu vực:', err);
+      }
     }
   };
 
@@ -297,7 +340,8 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
     if (availableLocations.length === 0 && !locationsLoading) {
       setLocationsLoading(true);
       setLocationsError('');
-      api.get('/warehouse/vitri/get_available/')
+      // api.get('/warehouse/vitri/get_available/')
+      api.get('/warehouse/vitri/?trang_thai=Trống')
         .then(res => {
           const data = res.data;
           setAvailableLocations(Array.isArray(data) ? data : (data.results || []));
@@ -585,6 +629,32 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
           </div>
         </div>
 
+        {/* Điều kiện validate hiển thị */}
+        {Object.keys(validateCondition).length > 0 && (
+          <div className="validate-conditions">
+            {validateCondition.yeu_cau_nhiet_do_min && validateCondition.yeu_cau_nhiet_do_max && (
+              <div className="validate-row">
+                <span>Yêu cầu nhóm hàng: Nhiệt độ từ <b>{validateCondition.yeu_cau_nhiet_do_min}°C</b> đến <b>{validateCondition.yeu_cau_nhiet_do_max}°C</b></span>
+              </div>
+            )}
+            {validateCondition.nhiet_do_min && validateCondition.nhiet_do_max && (
+              <div className="validate-row">
+                <span>Khu vực: Nhiệt độ từ <b>{validateCondition.nhiet_do_min}°C</b> đến <b>{validateCondition.nhiet_do_max}°C</b></span>
+              </div>
+            )}
+            {validateCondition.yeu_cau_do_am_min && validateCondition.yeu_cau_do_am_max && (
+              <div className="validate-row">
+                <span>Yêu cầu nhóm hàng: Độ ẩm từ <b>{validateCondition.yeu_cau_do_am_min}%</b> đến <b>{validateCondition.yeu_cau_do_am_max}%</b></span>
+              </div>
+            )}
+            {validateCondition.do_am_min && validateCondition.do_am_max && (
+              <div className="validate-row">
+                <span>Khu vực: Độ ẩm từ <b>{validateCondition.do_am_min}%</b> đến <b>{validateCondition.do_am_max}%</b></span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Position Selection */}
         <div className="form-section">
           <h3>
@@ -788,6 +858,10 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
                     <th>Ngày cập nhật</th>
                     <th>Khu vực</th>
                     <th>Pallet</th>
+                    <th>nhiệt độ min</th>
+                    <th>nhiệt độ max</th>
+                    <th>độ ẩm min</th>
+                    <th>độ ẩm max</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -798,10 +872,28 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
                           type="radio"
                           name="selected_location"
                           checked={formData.vi_tri_kho && formData.vi_tri_kho.ma_vi_tri === loc.ma_vi_tri}
-                          onChange={() => {
+                          onChange={async () => {
                             if (window.confirm('Bạn có chắc muốn chọn vị trí này không?')) {
                               setFormData(prev => ({ ...prev, vi_tri_kho: loc }));
                               setShowLocationSelector(false);
+                              // Gọi API khu vực lấy điều kiện
+                              if (loc && loc.khu_vuc_id) {
+                                try {
+                                  const res = await api.get(`/warehouse/khuvuc/${loc.khu_vuc_id}/`);
+                                  const data = res.data;
+                                  setValidateCondition(prev => ({
+                                    ...prev,
+                                    khu_vuc_id: data.id,
+                                    khu_vuc_ten: data.ten_khu_vuc,
+                                    nhiet_do_min: data.nhiet_do_min,
+                                    nhiet_do_max: data.nhiet_do_max,
+                                    do_am_min: data.do_am_min,
+                                    do_am_max: data.do_am_max
+                                  }));
+                                } catch (err) {
+                                  console.error('Lỗi lấy điều kiện khu vực:', err);
+                                }
+                              }
                             }
                           }}
                         />
@@ -820,6 +912,11 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
                       <td>{loc.updated_at}</td>
                       <td>{loc.khu_vuc_id}</td>
                       <td>{loc.pallet_id}</td>
+                      {/* Thêm các trường điều kiện khu vực nếu có */}
+                      <td>{loc.nhiet_do_min !== undefined ? loc.nhiet_do_min : ''}</td>
+                      <td>{loc.nhiet_do_max !== undefined ? loc.nhiet_do_max : ''}</td>
+                      <td>{loc.do_am_min !== undefined ? loc.do_am_min : ''}</td>
+                      <td>{loc.do_am_max !== undefined ? loc.do_am_max : ''}</td>
                     </tr>
                   ))}
                 </tbody>

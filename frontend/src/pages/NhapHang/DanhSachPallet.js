@@ -261,8 +261,10 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
         console.log('Huỷ xoá pallet:', id);
         return;
       }
+      // Gọi DELETE API đúng baseURL (8001)
       const response = await api.delete(`/warehouse/pallet/${id}/`);
-      if (response.status !== 204) throw new Error('Lỗi xoá pallet');
+      // axios trả về 204 hoặc 200 là thành công
+      if (![200, 204].includes(response.status)) throw new Error('Lỗi xoá pallet');
       setPallets(prev => prev.filter(p => p.id !== id));
       alert('Đã xoá pallet thành công!');
       console.log('Đã xoá pallet thành công:', id);

@@ -9,6 +9,7 @@ import DanhSachDon from './DanhSachDon';
 import XuatHangChiTiet from './XuatHangChiTiet';
 import SapXepThuTu from './SapXepThuTu';
 import InQRDon from './InQRDon';
+import api from '../../services/api';
 
 // Import common components (sẽ được tạo sau)
 // import { Loading, Toast, Modal, ConfirmDialog } from '../../components/common';
@@ -60,24 +61,14 @@ const XuatHang = () => {
   const fetchOrdersAndStores = async () => {
     setLoadingOrders(true);
     try {
-      // Gọi song song
+      // Gọi song song bằng axios
       const [storeRes, orderRes] = await Promise.all([
-        fetch('http://127.0.0.1:8001/api/orders/cuahang/', {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        }),
-        fetch('http://127.0.0.1:8001/api/orders/donxuat/', {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
+        api.get('/orders/cuahang/'),
+        api.get('/orders/donxuat/')
       ]);
-      if (!storeRes.ok || !orderRes.ok) throw new Error('Lỗi lấy dữ liệu');
-      const storeData = await storeRes.json();
-      const orderData = await orderRes.json();
+      // Lấy dữ liệu từ .data
+      const storeData = storeRes.data;
+      const orderData = orderRes.data;
       const stores = (storeData.results || storeData).map(s => ({ id: s.id, ten_cua_hang: s.ten_cua_hang }));
       const storeMap = {};
       stores.forEach(s => { storeMap[s.id] = s.ten_cua_hang; });
@@ -214,7 +205,7 @@ const XuatHang = () => {
     },
     {
       key: 'in-qr-don',
-      label: '🖨️ In QR đơn',
+      label: '��️ In QR đơn',
       icon: '🖨️',
       description: 'In mã QR cho đơn hàng'
     }
