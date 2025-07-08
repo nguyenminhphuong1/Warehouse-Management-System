@@ -319,60 +319,8 @@ const SearchBox = ({
       className={`search-container ${width === 'full' ? 'full-width' : ''} ${className}`}
       style={{ width: typeof width === 'number' ? `${width}px` : width }}
     >
-      {/* Search Input */}
-      <div className={`search-input-wrapper ${size} ${variant} ${error ? 'error' : ''}`}>
-        {/* Search Icon */}
-        {showSearchIcon && (
-          <div className={`search-icon ${size}`}>
-            🔍
-          </div>
-        )}
-        
-        {/* Input */}
-        <input
-          ref={inputRef}
-          type="text"
-          className={`search-input ${size}`}
-          value={inputValue}
-          placeholder={placeholder}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          onKeyDown={handleKeyDown}
-          disabled={disabled}
-          autoComplete="off"
-          {...inputProps}
-        />
-        
-        {/* Loading */}
-        {loading && <div className="search-loading" />}
-        
-        {/* Filter Button */}
-        {showFilterButton && filters.length > 0 && (
-          <button
-            type="button"
-            className={`search-filter-btn ${size} ${showFilters ? 'active' : ''}`}
-            onClick={handleToggleFilters}
-            disabled={disabled}
-            aria-label="Lọc tìm kiếm"
-          >
-            🔧
-          </button>
-        )}
-        
-        {/* Clear Button */}
-        {showClearButton && inputValue && !loading && (
-          <button
-            type="button"
-            className={`search-clear ${size} show`}
-            onClick={handleClear}
-            disabled={disabled}
-            aria-label="Xóa tìm kiếm"
-          >
-            ✕
-          </button>
-        )}
-      </div>
+     
+      
       
       {/* Suggestions Dropdown */}
       {showDropdown && displayItems.length > 0 && (

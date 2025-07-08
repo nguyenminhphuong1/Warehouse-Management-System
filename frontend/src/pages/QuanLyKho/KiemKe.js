@@ -14,53 +14,6 @@ const KiemKe = ({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [inspectionProgress, setInspectionProgress] = useState({});
 
-  // Mock kiểm kê chi tiết
-  const [inspectionDetails, setInspectionDetails] = useState({
-    'I002': {
-      items: [
-        {
-          id: 'ID001',
-          locationCode: 'C-01-01',
-          productSku: 'SKU001',
-          productName: 'Sản phẩm A',
-          expectedQuantity: 50,
-          countedQuantity: 48,
-          variance: -2,
-          status: 'counted',
-          countedBy: 'Phạm Văn E',
-          countedAt: '2025-01-15T09:30:00Z',
-          notes: 'Thiếu 2 thùng, kiểm tra lại'
-        },
-        {
-          id: 'ID002',
-          locationCode: 'C-01-02',
-          productSku: 'SKU002',
-          productName: 'Sản phẩm B',
-          expectedQuantity: 30,
-          countedQuantity: 30,
-          variance: 0,
-          status: 'counted',
-          countedBy: 'Phạm Văn E',
-          countedAt: '2025-01-15T10:15:00Z',
-          notes: 'Chính xác'
-        },
-        {
-          id: 'ID003',
-          locationCode: 'C-01-03',
-          productSku: 'SKU003',
-          productName: 'Sản phẩm C',
-          expectedQuantity: 25,
-          countedQuantity: null,
-          variance: null,
-          status: 'pending',
-          countedBy: null,
-          countedAt: null,
-          notes: ''
-        }
-      ]
-    }
-  });
-
   const tabs = [
     {
       key: 'ongoing',
@@ -115,39 +68,24 @@ const KiemKe = ({
   };
 
   const updateItemCount = (inspectionId, itemId, countedQuantity, notes = '') => {
-    setInspectionDetails(prev => ({
-      ...prev,
-      [inspectionId]: {
-        ...prev[inspectionId],
-        items: prev[inspectionId].items.map(item => {
-          if (item.id === itemId) {
-            const variance = countedQuantity - item.expectedQuantity;
-            return {
-              ...item,
-              countedQuantity,
-              variance,
-              status: 'counted',
-              countedBy: 'Current User',
-              countedAt: new Date().toISOString(),
-              notes
-            };
-          }
-          return item;
-        })
-      }
-    }));
-
-    // Update progress
-    const details = inspectionDetails[inspectionId];
-    if (details) {
-      const countedItems = details.items.filter(item => 
-        item.id === itemId ? true : item.status === 'counted'
-      ).length;
-      const totalItems = details.items.length;
-      const progress = Math.round((countedItems / totalItems) * 100);
-      
-      onUpdateInspection(inspectionId, { progress });
-    }
+    onUpdateInspection(inspectionId, {
+      items: inspectionProgress[inspectionId].items.map(item => {
+        if (item.id === itemId) {
+          const variance = countedQuantity - item.expectedQuantity;
+          return {
+            ...item,
+            countedQuantity,
+            variance,
+            status: 'counted',
+            countedBy: 'Current User',
+            countedAt: new Date().toISOString(),
+            notes
+          };
+        }
+        return item;
+      }),
+      progress: Math.round((inspectionProgress[inspectionId].items.filter(item => item.status === 'counted').length / inspectionProgress[inspectionId].items.length) * 100)
+    });
   };
 
   const getInspectionStatusColor = (status) => {
@@ -427,13 +365,10 @@ const KiemKe = ({
   const renderInspectionDetail = () => {
     if (!selectedInspection) return null;
     
-    const details = inspectionDetails[selectedInspection.id];
-    if (!details) return null;
-
-    const totalItems = details.items.length;
-    const countedItems = details.items.filter(item => item.status === 'counted').length;
-    const totalVariance = details.items.reduce((sum, item) => sum + (item.variance || 0), 0);
-    const hasDiscrepancies = details.items.some(item => item.variance !== 0);
+    const totalItems = inspectionProgress[selectedInspection.id].items.length;
+    const countedItems = inspectionProgress[selectedInspection.id].items.filter(item => item.status === 'counted').length;
+    const totalVariance = inspectionProgress[selectedInspection.id].items.reduce((sum, item) => sum + (item.variance || 0), 0);
+    const hasDiscrepancies = inspectionProgress[selectedInspection.id].items.some(item => item.variance !== 0);
 
     return (
       <div className="modal-overlay">
@@ -489,7 +424,7 @@ const KiemKe = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {details.items.map(item => (
+                  {inspectionProgress[selectedInspection.id].items.map(item => (
                     <tr 
                       key={item.id}
                       className={item.status === 'counted' ? 'counted' : 'pending'}

@@ -3,7 +3,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
-from .khu_vuc import KhuVuc
+from django.utils import timezone
 
 class ViTriKho(models.Model):
     """
@@ -30,7 +30,7 @@ class ViTriKho(models.Model):
     )
     
     khu_vuc = models.ForeignKey(
-        KhuVuc,
+        'warehouse.KhuVuc',
         on_delete=models.CASCADE,
         related_name='vi_tri_set',
         help_text="Khu vực chứa vị trí này"
@@ -49,6 +49,7 @@ class ViTriKho(models.Model):
     # Phân loại
     loai_vi_tri = models.CharField(
         max_length=10,
+        blank=True,
         choices=LOAI_VI_TRI_CHOICES,
         default='Pallet',
         help_text="Loại vị trí lưu trữ"
@@ -59,6 +60,7 @@ class ViTriKho(models.Model):
         max_digits=10,
         decimal_places=2,
         default=0,
+        blank=True,
         validators=[MinValueValidator(0)],
         help_text="Tải trọng tối đa (kg)"
     )
@@ -67,6 +69,7 @@ class ViTriKho(models.Model):
         max_digits=8,
         decimal_places=2,
         default=0,
+        blank=True,
         validators=[MinValueValidator(0)],
         help_text="Chiều cao tối đa (cm)"
     )
@@ -76,6 +79,7 @@ class ViTriKho(models.Model):
         max_length=20,
         choices=TRANG_THAI_CHOICES,
         default='Trống',
+        blank=True,
         help_text="Trạng thái vị trí"
     )
     
@@ -141,30 +145,30 @@ class ViTriKho(models.Model):
         """Override save để tự động tạo mã vị trí"""
         if not self.ma_vi_tri:
             self.ma_vi_tri = f"{self.khu_vuc.ma_khu_vuc}{self.hang}{self.cot}"
+
+        # Kiểm tra nếu có pallet thì trạng thái phải là "Có_hàng"
+        if self.pallet:
+            self.trang_thai = "Có_hàng"
+        
         super().save(*args, **kwargs)
     
     def clean(self):
         """Validate model"""
-        super().clean()
-        
+        errors = {}        
         # Kiểm tra hang phải là chữ cái
         if not self.hang.isalpha() or len(self.hang) != 1:
-            raise ValidationError('Hàng phải là một chữ cái (A, B, C...)')
-        
+            errors['hang'] = "Hàng phải là chữ cái. VD: A, B, ..."  
+                  
         # Kiểm tra vị trí có trong phạm vi khu vực không
         hang_index = ord(self.hang.upper()) - ord('A')
         if hang_index >= self.khu_vuc.kich_thuoc_hang:
-            raise ValidationError(f'Hàng {self.hang} vượt quá kích thước khu vực')
+            errors['hang'] = f"Hàng {self.hang} vượt quá kích thước khu vực."
         
         if self.cot > self.khu_vuc.kich_thuoc_cot:
-            raise ValidationError(f'Cột {self.cot} vượt quá kích thước khu vực')
+            errors['cot'] = f"Cột {self.cot} vượt quá kích thước khu vực."
         
-        # Kiểm tra nếu có pallet thì trạng thái phải là "Có_hàng"
-        if self.pallet and self.trang_thai != 'Có_hàng':
-            raise ValidationError('Nếu có pallet thì trạng thái phải là "Có hàng"')
-        
-        if not self.pallet and self.trang_thai == 'Có_hàng':
-            raise ValidationError('Nếu trạng thái là "Có hàng" thì phải có pallet')
+        if errors:
+            raise ValidationError(errors)
     
     def is_available(self):
         """Kiểm tra vị trí có sẵn để lưu trữ không"""
@@ -207,18 +211,15 @@ class ViTriKho(models.Model):
         self.trang_thai = 'Có_hàng'
         self.save()
         
-        # Cập nhật pallet
-        pallet.vi_tri_kho = self
-        pallet.save()
         
         # Log thay đổi
-        from apps.warehouse.models.lich_su import LichSuXuatNhap
+        from apps.orders.models import LichSuXuatNhap
         LichSuXuatNhap.objects.create(
-            pallet=pallet,
+            pallets=pallet,
             loai_giao_dich='Nhập',
             so_luong=pallet.so_thung_ban_dau,
             nguoi_thuc_hien=user.username if user else 'System',
-            ghi_chu=f'Gán vào vị trí {self.ma_vi_tri}'
+            ghi_chu=f'Gán vào pallet {self.pallet.ma_pallet} vị trí {self.ma_vi_tri}'
         )
     
     def remove_pallet(self, user=None, reason=""):
@@ -229,18 +230,14 @@ class ViTriKho(models.Model):
         pallet = self.pallet
         
         # Log thay đổi
-        from apps.warehouse.models.lich_su import LichSuXuatNhap
+        from apps.orders.models import LichSuXuatNhap
         LichSuXuatNhap.objects.create(
-            pallet=pallet,
+            pallets=pallet,
             loai_giao_dich='Xuất',
             so_luong=pallet.so_thung_con_lai,
             nguoi_thuc_hien=user.username if user else 'System',
-            ghi_chu=f'Xóa khỏi vị trí {self.ma_vi_tri}. {reason}'
+            ghi_chu=f'Xóa pallet {self.pallet.ma_pallet} khỏi vị trí {self.ma_vi_tri}. {reason}'
         )
-        
-        # Cập nhật
-        pallet.vi_tri_kho = None
-        pallet.save()
         
         self.pallet = None
         self.trang_thai = 'Trống'
@@ -333,6 +330,9 @@ class ViTriKho(models.Model):
             # Hàng cũ hơn có priority thấp hơn
             days_old = (timezone.now().date() - self.pallet.ngay_san_xuat).days
             priority -= days_old * 0.1
+
+        if self.pallet:
+            is_priority = self.pallet.tinh_trang_hang_set.filter(trang_thai="Ưu_tiên").exists()
         
         # Khoảng cách đến cửa ra
         priority += self.get_distance_to_exit()

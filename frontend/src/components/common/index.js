@@ -70,8 +70,7 @@ import SearchBox, {
 import Header, {
   useHeader,
   warehouseNavigation,
-  warehouseUserMenu,
-  warehouseActions
+  warehouseUserMenu
 } from './Header';
 
 import Footer, {
@@ -179,8 +178,7 @@ export { default as Header } from './Header';
 export {
   useHeader,
   warehouseNavigation,
-  warehouseUserMenu,
-  warehouseActions
+  warehouseUserMenu
 } from './Header';
 
 // Footer
@@ -277,8 +275,7 @@ export const WarehouseNavigation = {
   header: warehouseNavigation,
   sidebar: warehouseSidebarNavigation,
   sidebarGrouped: warehouseNavigationGrouped,
-  userMenu: warehouseUserMenu,
-  actions: warehouseActions
+  userMenu: warehouseUserMenu
 };
 
 export const WarehouseFooter = {

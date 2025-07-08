@@ -3,15 +3,23 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import './DanhSachPallet.css';
+import api from '../../services/api';
 
 const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport }) => {
   const [pallets, setPallets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPallets, setSelectedPallets] = useState([]);
-  const [showBulkActions, setShowBulkActions] = useState(false);
+  //const [showBulkActions, setShowBulkActions] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedQRPallet, setSelectedQRPallet] = useState(null);
+  const [printQRData, setPrintQRData] = useState(null);
+  const [showPrintQRModal, setShowPrintQRModal] = useState(false);
+  const [showCreateQRModal, setShowCreateQRModal] = useState(false);
+  const [createQRUrl, setCreateQRUrl] = useState('');
+  const [createQRMaPallet, setCreateQRMaPallet] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Filters and Sorting
   const [filters, setFilters] = useState({
@@ -37,111 +45,32 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
     totalPages: 0
   });
 
-  // Sample data for demonstration
+  // Load pallets data from API
   useEffect(() => {
-    const loadSampleData = async () => {
+    const loadPallets = async () => {
       setLoading(true);
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const samplePallets = [
-          {
-            id: 1,
-            ma_pallet: 'P-2025-001',
-            san_pham: {
-              ten_san_pham: 'Bia Heineken 330ml',
-              nhom_hang: 'Bia',
-              ma_san_pham: 'SP-001'
-            },
-            so_thung_ban_dau: 100,
-            so_thung_con_lai: 85,
-            vi_tri_kho: { ma_vi_tri: 'A1', khu_vuc: 'A' },
-            ngay_san_xuat: '2025-01-15',
-            han_su_dung: '2025-07-15',
-            ngay_kiem_tra_cl: '2025-06-15',
-            trang_thai: 'Đã_mở',
-            trong_luong_thung: 15.5,
-            nguoi_tao: 'Nguyễn Văn A',
-            created_at: '2025-01-20T08:30:00Z',
-            ghi_chu: 'Lô mới, chất lượng tốt'
-          },
-          {
-            id: 2,
-            ma_pallet: 'P-2025-002',
-            san_pham: {
-              ten_san_pham: 'Coca Cola 355ml',
-              nhom_hang: 'Nước ngọt',
-              ma_san_pham: 'SP-002'
-            },
-            so_thung_ban_dau: 120,
-            so_thung_con_lai: 120,
-            vi_tri_kho: { ma_vi_tri: 'B2', khu_vuc: 'B' },
-            ngay_san_xuat: '2025-01-10',
-            han_su_dung: '2025-06-10',
-            ngay_kiem_tra_cl: '2025-06-08',
-            trang_thai: 'Mới',
-            trong_luong_thung: 12.8,
-            nguoi_tao: 'Trần Thị B',
-            created_at: '2025-01-22T10:15:00Z',
-            ghi_chu: ''
-          },
-          {
-            id: 3,
-            ma_pallet: 'P-2025-003',
-            san_pham: {
-              ten_san_pham: 'Nước suối Lavie 500ml',
-              nhom_hang: 'Nước suối',
-              ma_san_pham: 'SP-003'
-            },
-            so_thung_ban_dau: 80,
-            so_thung_con_lai: 0,
-            vi_tri_kho: { ma_vi_tri: 'C1', khu_vuc: 'C' },
-            ngay_san_xuat: '2025-01-05',
-            han_su_dung: '2025-12-05',
-            ngay_kiem_tra_cl: '2025-07-05',
-            trang_thai: 'Trống',
-            trong_luong_thung: 10.2,
-            nguoi_tao: 'Lê Văn C',
-            created_at: '2025-01-25T14:20:00Z',
-            ghi_chu: 'Đã xuất hết'
-          },
-          {
-            id: 4,
-            ma_pallet: 'P-2025-004',
-            san_pham: {
-              ten_san_pham: 'Tiger Beer 355ml',
-              nhom_hang: 'Bia',
-              ma_san_pham: 'SP-004'
-            },
-            so_thung_ban_dau: 90,
-            so_thung_con_lai: 45,
-            vi_tri_kho: { ma_vi_tri: 'A3', khu_vuc: 'A' },
-            ngay_san_xuat: '2025-01-08',
-            han_su_dung: '2025-06-08',
-            ngay_kiem_tra_cl: '2025-06-06',
-            trang_thai: 'Đã_mở',
-            trong_luong_thung: 14.2,
-            nguoi_tao: 'Phạm Văn D',
-            created_at: '2025-01-28T09:45:00Z',
-            ghi_chu: 'Cần kiểm tra CL sớm'
-          }
-        ];
-        
-        setPallets(samplePallets);
+        // Sử dụng axios instance đã cấu hình baseURL và interceptor
+        const response = await api.get('/warehouse/pallet/get_dict/');
+        const data = response.data;
+        console.log('Fetched pallet data:', data); // DEBUG
+        // Transform API data to match component structure
+        const transformedPallets = data.results || data || [];
+        setPallets(transformedPallets);
         setPagination(prev => ({
           ...prev,
-          totalItems: samplePallets.length,
-          totalPages: Math.ceil(samplePallets.length / prev.pageSize)
+          totalItems: data.count || transformedPallets.length,
+          totalPages: Math.ceil((data.count || transformedPallets.length) / prev.pageSize)
         }));
       } catch (err) {
         setError('Không thể tải danh sách pallet');
+        console.error('Error loading pallets:', err); // DEBUG
       } finally {
         setLoading(false);
       }
     };
 
-    loadSampleData();
+    loadPallets();
   }, []);
 
   // Filter and sort pallets
@@ -152,9 +81,10 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       result = result.filter(pallet => 
-        pallet.ma_pallet.toLowerCase().includes(searchLower) ||
-        pallet.san_pham.ten_san_pham.toLowerCase().includes(searchLower) ||
-        pallet.nguoi_tao.toLowerCase().includes(searchLower)
+        (pallet.ma_pallet ? pallet.ma_pallet.toLowerCase() : '').includes(searchLower) ||
+        (pallet.ten ? pallet.ten.toLowerCase() : '') .includes(searchLower) ||
+        (pallet.san_pham && pallet.san_pham.ten ? pallet.san_pham.ten.toLowerCase() : '').includes(searchLower) ||
+        (pallet.ghi_chu ? pallet.ghi_chu.toLowerCase() : '').includes(searchLower)
       );
     }
 
@@ -168,7 +98,8 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
 
     if (filters.san_pham) {
       result = result.filter(pallet => 
-        pallet.san_pham.nhom_hang.toLowerCase().includes(filters.san_pham.toLowerCase())
+        (pallet.ten ? pallet.ten.toLowerCase() : '').includes(filters.san_pham.toLowerCase()) ||
+        (pallet.san_pham && pallet.san_pham.ten ? pallet.san_pham.ten.toLowerCase() : '').includes(filters.san_pham.toLowerCase())
       );
     }
 
@@ -189,11 +120,11 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
 
       // Handle nested properties
       if (sorting.field === 'san_pham') {
-        aValue = a.san_pham.ten_san_pham;
-        bValue = b.san_pham.ten_san_pham;
+        aValue = a.san_pham.ten;
+        bValue = b.san_pham.ten;
       } else if (sorting.field === 'vi_tri') {
-        aValue = a.vi_tri_kho?.ma_vi_tri || '';
-        bValue = b.vi_tri_kho?.ma_vi_tri || '';
+        aValue = a.vi_tri_kho || '';
+        bValue = b.vi_tri_kho || '';
       }
 
       // Handle dates
@@ -251,17 +182,19 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
 
   // Handle selection
   const handleSelectPallet = (palletId) => {
+    console.log('Chọn pallet:', palletId);
     setSelectedPallets(prev => {
       const newSelection = prev.includes(palletId)
         ? prev.filter(id => id !== palletId)
         : [...prev, palletId];
       
-      setShowBulkActions(newSelection.length > 0);
+      //setShowBulkActions(newSelection.length > 0);
       return newSelection;
     });
   };
 
   const handleSelectAll = () => {
+    console.log('Chọn tất cả pallet trang hiện tại');
     const allIds = paginatedPallets.map(p => p.id);
     const allSelected = allIds.every(id => selectedPallets.includes(id));
     
@@ -275,30 +208,112 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
   // Handle bulk actions
   const handleBulkExport = () => {
     const selectedData = pallets.filter(p => selectedPallets.includes(p.id));
-    // Export logic here
     console.log('Exporting:', selectedData);
   };
 
   const handleBulkPrint = () => {
     const selectedData = pallets.filter(p => selectedPallets.includes(p.id));
-    // Print logic here
     console.log('Printing:', selectedData);
   };
 
-  const handleBulkDelete = () => {
-    if (window.confirm(`Bạn có chắc muốn xóa ${selectedPallets.length} pallet đã chọn?`)) {
-      setPallets(prev => prev.filter(p => !selectedPallets.includes(p.id)));
-      setSelectedPallets([]);
-      setShowBulkActions(false);
+  // const handleBulkDelete = async () => {
+  //   if (window.confirm(`Bạn có chắc muốn xóa ${selectedPallets.length} pallet đã chọn?`)) {
+  //     try {
+  //       console.log('Bulk deleting pallets:', selectedPallets); // DEBUG
+  //       const response = await fetch('http://127.0.0.1:8000/warehouse/pallet/bulk-delete/', {
+  //         method: 'DELETE',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'Authorization': `Bearer ${localStorage.getItem('token')}`
+  //         },
+  //         body: JSON.stringify({ pallet_ids: selectedPallets })
+  //       });
+        
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
+        
+  //       // Remove from local state after successful API call
+  //       setPallets(prev => prev.filter(p => !selectedPallets.includes(p.id)));
+  //       setSelectedPallets([]);
+  //       setShowBulkActions(false);
+        
+  //       alert('Đã xóa thành công các pallet đã chọn');
+  //     } catch (err) {
+  //       console.error('Error deleting pallets:', err); // DEBUG
+  //       alert('Có lỗi xảy ra khi xóa pallet');
+  //     }
+  //   }
+  // };
+
+  // Xử lý chọn 1 pallet (single select)
+  const handleSelectSinglePallet = (palletId) => {
+    setSelectedId(prev => prev === palletId ? null : palletId);
+  };
+
+  // Sửa hàm handleDeletePallet nhận vào id
+  const handleDeletePallet = async (id) => {
+    console.log('Thực hiện xoá pallet:', id);
+    if (!id) return;
+    try {
+      const confirmed = window.confirm('Bạn có chắc chắn muốn xoá pallet này?');
+      if (!confirmed) {
+        console.log('Huỷ xoá pallet:', id);
+        return;
+      }
+      // Gọi DELETE API đúng baseURL (8001)
+      const response = await api.delete(`/warehouse/pallet/${id}/`);
+      // axios trả về 204 hoặc 200 là thành công
+      if (![200, 204].includes(response.status)) throw new Error('Lỗi xoá pallet');
+      setPallets(prev => prev.filter(p => p.id !== id));
+      alert('Đã xoá pallet thành công!');
+      console.log('Đã xoá pallet thành công:', id);
+    } catch (err) {
+      // Kiểm tra lỗi liên quan đến ProtectedError hoặc lịch sử xuất/nhập
+      if (
+        (err.response && err.response.data && typeof err.response.data === 'string' && err.response.data.includes('ProtectedError')) ||
+        (err.response && err.response.status === 500 && err.response.data && typeof err.response.data === 'string' && err.response.data.includes('LichSuXuatNhap'))
+      ) {
+        alert('Không thể xóa pallet này vì liên quan tới dữ liệu lịch sử xuất nhập. Vui lòng xoá lịch sử xuất/nhập của Pallet trước!');
+      } else {
+        alert('Có lỗi khi xoá pallet!');
+      }
+      console.error('Lỗi khi xoá pallet:', err);
+    }
+  };
+
+  const handleDeleteLichSuPallet = async (palletId) => {
+    if (!palletId) return;
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xoá toàn bộ lịch sử xuất/nhập của pallet này?');
+    if (!confirmed) return;
+    try {
+      // 1. Lấy danh sách lịch sử xuất/nhập của pallet
+      const res = await api.get(`/orders/lichsuxuatnhap/?pallet_id=${palletId}`);
+      const lichSuList = res.data.results || res.data;
+      if (!lichSuList.length) {
+        alert('Không có lịch sử xuất/nhập để xoá!');
+        return;
+      }
+      // 2. Xoá từng bản ghi theo id
+      for (const lichSu of lichSuList) {
+        await api.delete(`/orders/lichsuxuatnhap/${lichSu.id}/`);
+      }
+      alert('Đã xoá toàn bộ lịch sử xuất/nhập của pallet thành công!');
+      window.location.reload();
+    } catch (err) {
+      alert('Có lỗi khi xoá lịch sử xuất/nhập của pallet!');
+      console.error('Lỗi khi xoá lịch sử xuất/nhập pallet:', err);
     }
   };
 
   // Handle pagination
   const handlePageChange = (page) => {
+    console.log('Chuyển trang:', page);
     setPagination(prev => ({ ...prev, currentPage: page }));
   };
 
   const handlePageSizeChange = (size) => {
+    console.log('Đổi số dòng/trang:', size);
     setPagination(prev => ({
       ...prev,
       pageSize: parseInt(size),
@@ -312,7 +327,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
     return JSON.stringify({
       type: 'pallet',
       ma_pallet: pallet.ma_pallet,
-      san_pham: pallet.san_pham.ten_san_pham,
+      san_pham: pallet.san_pham.ten,
       so_thung: pallet.so_thung_con_lai,
       han_su_dung: pallet.han_su_dung,
       vi_tri: pallet.vi_tri_kho?.ma_vi_tri,
@@ -356,7 +371,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
               <i className="icon-layers"></i>
             </div>
             <div className="stat-content">
-              <h3>{pallets.length}</h3>
+            <h3>{pallets.length}</h3>
               <p>Tổng pallet</p>
             </div>
           </div>
@@ -405,7 +420,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
             <i className="icon-search"></i>
             <input
               type="text"
-              placeholder="Tìm kiếm theo mã pallet, sản phẩm, người tạo..."
+              placeholder="Tìm kiếm theo mã pallet, sản phẩm, ghi chú..."
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
             />
@@ -436,7 +451,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
           
           <input
             type="text"
-            placeholder="Nhóm hàng..."
+            placeholder="Tên sản phẩm..."
             value={filters.san_pham}
             onChange={(e) => setFilters(prev => ({ ...prev, san_pham: e.target.value }))}
           />
@@ -454,7 +469,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
       </div>
 
       {/* Bulk Actions */}
-      {showBulkActions && (
+      {/* {showBulkActions && (
         <div className="bulk-actions">
           <div className="selection-info">
             <span>Đã chọn {selectedPallets.length} pallet</span>
@@ -480,7 +495,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
             {canPrint && (
               <button className="btn btn-warning" onClick={handleBulkPrint}>
                 <i className="icon-printer"></i>
-                In QR
+                Tạo QR
               </button>
             )}
             
@@ -492,7 +507,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
             )}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Table */}
       <div className="table-container">
@@ -506,199 +521,100 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                   onChange={handleSelectAll}
                 />
               </th>
-              <th 
-                className={`sortable ${sorting.field === 'ma_pallet' ? sorting.direction : ''}`}
-                onClick={() => handleSort('ma_pallet')}
-              >
-                Mã Pallet
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th 
-                className={`sortable ${sorting.field === 'san_pham' ? sorting.direction : ''}`}
-                onClick={() => handleSort('san_pham')}
-              >
-                Sản phẩm
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th className="center">Số lượng</th>
-              <th 
-                className={`sortable ${sorting.field === 'vi_tri' ? sorting.direction : ''}`}
-                onClick={() => handleSort('vi_tri')}
-              >
-                Vị trí
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th 
-                className={`sortable ${sorting.field === 'han_su_dung' ? sorting.direction : ''}`}
-                onClick={() => handleSort('han_su_dung')}
-              >
-                Hạn sử dụng
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th 
-                className={`sortable ${sorting.field === 'trang_thai' ? sorting.direction : ''}`}
-                onClick={() => handleSort('trang_thai')}
-              >
-                Trạng thái
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th 
-                className={`sortable ${sorting.field === 'created_at' ? sorting.direction : ''}`}
-                onClick={() => handleSort('created_at')}
-              >
-                Ngày tạo
-                <i className="icon-chevron-down"></i>
-              </th>
-              <th className="actions-col">Thao tác</th>
+              <th>Mã Pallet</th>
+              <th>Sản phẩm</th>
+              <th>Vị trí</th>
+              <th>Ghi chú</th>
+              <th>Thao tác</th>
             </tr>
           </thead>
-          
           <tbody>
-            {paginatedPallets.map(pallet => {
-              const statusInfo = getStatusInfo(pallet.trang_thai);
-              const expiryInfo = getExpiryInfo(pallet.han_su_dung);
-              const utilizationRate = (pallet.so_thung_con_lai / pallet.so_thung_ban_dau) * 100;
-              
-              return (
-                <tr key={pallet.id} className={selectedPallets.includes(pallet.id) ? 'selected' : ''}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedPallets.includes(pallet.id)}
-                      onChange={() => handleSelectPallet(pallet.id)}
-                    />
-                  </td>
-                  
-                  <td>
-                    <div className="pallet-code">
-                      <strong>{pallet.ma_pallet}</strong>
-                      {pallet.ghi_chu && (
-                        <i className="icon-message-circle note-indicator" title={pallet.ghi_chu}></i>
-                      )}
-                    </div>
-                  </td>
-                  
-                  <td>
-                    <div className="product-info">
-                      <div className="product-name">{pallet.san_pham.ten_san_pham}</div>
-                      <div className="product-group">{pallet.san_pham.nhom_hang}</div>
-                    </div>
-                  </td>
-                  
-                  <td className="center">
-                    <div className="quantity-info">
-                      <div className="quantity-text">
-                        <strong>{pallet.so_thung_con_lai}</strong>/{pallet.so_thung_ban_dau}
-                      </div>
-                      <div className="progress-bar">
-                        <div 
-                          className="progress-fill"
-                          style={{ 
-                            width: `${utilizationRate}%`,
-                            backgroundColor: utilizationRate === 0 ? '#dc3545' : 
-                                           utilizationRate < 30 ? '#ffc107' : '#28a745'
-                          }}
-                        ></div>
-                      </div>
-                      <div className="quantity-percent">{utilizationRate.toFixed(0)}%</div>
-                    </div>
-                  </td>
-                  
-                  <td>
-                    <div className="location-info">
-                      <span className="location-code">{pallet.vi_tri_kho?.ma_vi_tri || 'N/A'}</span>
-                      {pallet.vi_tri_kho && (
-                        <span className="location-area">Khu {pallet.vi_tri_kho.khu_vuc}</span>
-                      )}
-                    </div>
-                  </td>
-                  
-                  <td>
-                    <div className="expiry-info">
-                      <div className="expiry-date">
-                        {new Date(pallet.han_su_dung).toLocaleDateString('vi-VN')}
-                      </div>
-                      <div className={`expiry-status ${expiryInfo.color}`}>
-                        {expiryInfo.type === 'expired' ? `Quá hạn ${expiryInfo.days} ngày` :
-                         expiryInfo.type === 'expiring' ? `Còn ${expiryInfo.days} ngày` :
-                         expiryInfo.type === 'warning' ? `Còn ${expiryInfo.days} ngày` :
-                         `Còn ${expiryInfo.days} ngày`}
-                      </div>
-                    </div>
-                  </td>
-                  
-                  <td>
-                    <span className={`status-badge ${statusInfo.color}`}>
-                      <i className={`icon-${statusInfo.icon}`}></i>
-                      {statusInfo.text}
-                    </span>
-                  </td>
-                  
-                  <td>
-                    <div className="date-info">
-                      <div className="create-date">
-                        {new Date(pallet.created_at).toLocaleDateString('vi-VN')}
-                      </div>
-                      <div className="create-time">
-                        {new Date(pallet.created_at).toLocaleTimeString('vi-VN', { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </div>
-                    </div>
-                  </td>
-                  
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        className="btn-icon btn-info"
-                        onClick={() => onViewDetail(pallet)}
-                        title="Xem chi tiết"
-                      >
-                        <i className="icon-eye"></i>
-                      </button>
-                      
-                      {canPrint && (
-                        <button
-                          className="btn-icon btn-warning"
-                          onClick={() => {
-                            setSelectedQRPallet(pallet);
-                            setShowQRModal(true);
-                          }}
-                          title="Xem QR Code"
-                        >
-                          <i className="icon-qr-code"></i>
-                        </button>
-                      )}
-                      
-                      {canEdit && (
-                        <button
-                          className="btn-icon btn-primary"
-                          onClick={() => console.log('Edit pallet:', pallet.id)}
-                          title="Chỉnh sửa"
-                        >
-                          <i className="icon-edit"></i>
-                        </button>
-                      )}
-                      
-                      {canDelete && (
-                        <button
-                          className="btn-icon btn-danger"
-                          onClick={() => {
-                            if (window.confirm(`Bạn có chắc muốn xóa pallet ${pallet.ma_pallet}?`)) {
-                              setPallets(prev => prev.filter(p => p.id !== pallet.id));
-                            }
-                          }}
-                          title="Xóa"
-                        >
-                          <i className="icon-trash-2"></i>
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+            {paginatedPallets.map(pallet => (
+              <tr key={pallet.id} className={selectedPallets.includes(pallet.id) ? 'selected' : ''}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedPallets.includes(pallet.id)}
+                    onChange={() => handleSelectPallet(pallet.id)}
+                  />
+                </td>
+                <td>{pallet.ma_pallet}</td>
+                <td>{pallet.san_pham.ten}</td>
+                <td>{pallet.vi_tri_kho}</td>
+                <td>{pallet.ghi_chu}</td>
+                <td>
+                  <div className="action-buttons">
+                    <button
+                      className="btn-icon btn-info"
+                      onClick={async (e) => {
+                        console.log('Xem chi tiết pallet:', pallet.id);
+                        e.stopPropagation();
+                        try {
+                          const response = await api.get(`/warehouse/pallet/${pallet.id}/`);
+                          if (response.status !== 200) {
+                            throw new Error(`Lỗi lấy chi tiết pallet: ${response.status}`);
+                          }
+                          const data = response.data;
+                          setSelectedQRPallet(data);
+                          setShowQRModal(true);
+                          console.log('Đã xem chi tiết pallet:', pallet.id);
+                        } catch (err) {
+                          alert('Không lấy được chi tiết pallet!');
+                          console.error('Lỗi lấy chi tiết pallet:', err);
+                        }
+                      }}
+                      title="Xem chi tiết"
+                    >
+                      <i className="icon-eye"></i> Xem chi tiết
+                    </button>
+                    <button
+                      className="btn-icon btn-info"
+                      onClick={async (e) => {
+                        console.log('Xem QR code pallet:', pallet.id);
+                        e.stopPropagation();
+                        try {
+                          const response = await api.get(`/warehouse/pallet/${pallet.id}/qr_code/`);
+                          if (response.status !== 200) {
+                            throw new Error(`Lỗi lấy QR Code: ${response.status}`);
+                          }
+                          const data = response.data;
+                          if (data.qr_code_url) {
+                            setCreateQRUrl(`http://127.0.0.1:8001${data.qr_code_url}`);
+                            setCreateQRMaPallet(pallet.ma_pallet || data.ma_pallet || '');
+                            setShowCreateQRModal(true);
+                            console.log('Đã xem và in QR code pallet:', pallet.id);
+                          } else {
+                            alert('Không nhận được đường dẫn QR code!');
+                            console.error('Không nhận được đường dẫn QR code!');
+                          }
+                        } catch (err) {
+                          alert('Lấy QR Code thất bại!');
+                          console.error('Lấy QR Code thất bại:', err);
+                        }
+                      }}
+                      title="Xem và in QR Code cho pallet này"
+                    >
+                      <i className="icon-qr-code"></i> QR Code
+                    </button>
+                    <button
+                      className="btn-icon btn-danger"
+                      onClick={() => handleDeletePallet(pallet.id)}
+                      title="Xoá pallet này"
+                    >
+                      <i className="icon-trash-2"></i> Xoá
+                    </button>
+                    {/* Nút xoá lịch sử pallet */}
+                    <button
+                      className="btn-icon btn-warning"
+                      onClick={() => handleDeleteLichSuPallet(pallet.id)}
+                      title="Xoá lịch sử xuất/nhập của pallet này"
+                    >
+                      <i className="icon-trash"></i> Xoá lịch sử Pallet
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -775,12 +691,12 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
         </div>
       </div>
 
-      {/* QR Code Modal */}
+      {/* Modal hiển thị chi tiết pallet */}
       {showQRModal && selectedQRPallet && (
         <div className="qr-modal">
           <div className="qr-modal-content">
             <div className="qr-modal-header">
-              <h3>QR Code - {selectedQRPallet.ma_pallet}</h3>
+              <h3>Chi tiết Pallet - {selectedQRPallet.ma_pallet}</h3>
               <button 
                 className="close-button"
                 onClick={() => {
@@ -791,43 +707,72 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                 <i className="icon-x"></i>
               </button>
             </div>
-            
             <div className="qr-modal-body">
-              <div className="qr-code-container">
-                <QRCodeCanvas
-                  value={generateQRData(selectedQRPallet)}
-                  size={200}
-                  level="M"
-                  includeMargin={true}
-                />
-              </div>
-              
               <div className="qr-info">
-                <div className="qr-details">
-                  <div className="detail-row">
-                    <span className="label">Mã pallet:</span>
-                    <span className="value">{selectedQRPallet.ma_pallet}</span>
+                <table className="detail-table">
+                  <tbody>
+                    {Object.entries(selectedQRPallet).map(([key, value]) => {
+                      const fieldMap = {
+                        id: 'ID',
+                        ma_pallet: 'Mã Pallet',
+                        san_pham: 'Sản phẩm',
+                        nha_cung_cap: 'Nhà cung cấp',
+                        vi_tri_kho: 'Vị trí',
+                        so_thung_ban_dau: 'Số thùng ban đầu',
+                        so_thung_con_lai: 'Số thùng còn lại',
+                        han_su_dung: 'Hạn sử dụng',
+                        ngay_san_xuat: 'Ngày sản xuất',
+                        ngay_kiem_tra_cl: 'Ngày kiểm tra CL',
+                        trong_luong_thung: 'Trọng lượng/thùng (kg)',
+                        chieu_dai: 'Chiều dài (cm)',
+                        chieu_rong: 'Chiều rộng (cm)',
+                        chieu_cao: 'Chiều cao (cm)',
+                        nhiet_do_bao_quan: 'Nhiệt độ bảo quản (°C)',
+                        do_am_bao_quan: 'Độ ẩm bảo quản (%)',
+                        nguoi_tao: 'Người tạo',
+                        created_at: 'Ngày tạo',
+                        ngay_nhap_kho: 'Ngày nhập kho',
+                        trang_thai: 'Trạng thái',
+                        lo_san_xuat: 'Lô sản xuất',
+                        so_phieu_nhap: 'Số phiếu nhập',
+                        ghi_chu: 'Ghi chú',
+                        qr_code_url: 'QR Code',
+                        qr_code: 'QR Code',
+                      };
+                      let displayValue = value;
+                      if (typeof value === 'object' && value !== null) {
+                        if (value.san_pham.ten) displayValue = value.san_pham.ten;
+                        else if (value.ten_nha_cung_cap) displayValue = value.ten_nha_cung_cap;
+                        else if (value.ma_vi_tri) displayValue = value.ma_vi_tri;
+                        else displayValue = JSON.stringify(value);
+                      }
+                      if (key === 'qr_code_url' && value) {
+                        displayValue = <a href={`http://127.0.0.1:8001${value}`} target="_blank" rel="noopener noreferrer">Xem QR</a>;
+                      }
+                      return (
+                        <tr key={key}>
+                          <td className="detail-label">{fieldMap[key] || key}</td>
+                          <td className="detail-value">{displayValue}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {selectedQRPallet.qr_code_url && (
+                  <div style={{ marginTop: 16, textAlign: 'center' }}>
+                    <button
+                      className="btn btn-info"
+                      onClick={() => {
+                        console.log('Tạo QR từ URL:', selectedQRPallet.qr_code_url);
+                        window.open(`http://127.0.0.1:8001${selectedQRPallet.qr_code_url}`, '_blank');
+                      }}
+                    >
+                      Tạo QR
+                    </button>
                   </div>
-                  <div className="detail-row">
-                    <span className="label">Sản phẩm:</span>
-                    <span className="value">{selectedQRPallet.san_pham.ten_san_pham}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Số lượng:</span>
-                    <span className="value">{selectedQRPallet.so_thung_con_lai} thùng</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Vị trí:</span>
-                    <span className="value">{selectedQRPallet.vi_tri_kho?.ma_vi_tri || 'Chưa có'}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Hạn sử dụng:</span>
-                    <span className="value">{new Date(selectedQRPallet.han_su_dung).toLocaleDateString('vi-VN')}</span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
-            
             <div className="qr-modal-actions">
               <button 
                 className="btn btn-secondary"
@@ -838,69 +783,105 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
               >
                 Đóng
               </button>
-              
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal in QR code */}
+      {showPrintQRModal && printQRData && (
+        <div className="qr-modal">
+          <div className="qr-modal-content qr-modal-print">
+            <div className="qr-modal-header">
+              <h3>In QR Code - {printQRData.ma_pallet || printQRData.id}</h3>
               <button 
-                className="btn btn-warning"
+                className="close-button"
                 onClick={() => {
-                  // Print single QR
-                  const printWindow = window.open('', '_blank');
-                  const qrData = generateQRData(selectedQRPallet);
-                  printWindow.document.write(`
-                    <html>
-                      <head>
-                        <title>QR Code - ${selectedQRPallet.ma_pallet}</title>
-                        <style>
-                          body { 
-                            font-family: Arial, sans-serif; 
-                            text-align: center; 
-                            margin: 20px; 
-                          }
-                          .qr-container { 
-                            border: 2px solid #000; 
-                            padding: 20px; 
-                            display: inline-block; 
-                          }
-                          h2 { margin: 0 0 10px 0; }
-                          .info { margin-top: 15px; }
-                        </style>
-                      </head>
-                      <body>
-                        <div class="qr-container">
-                          <h2>${selectedQRPallet.ma_pallet}</h2>
-                          <div id="qr-placeholder">[QR Code sẽ được tạo ở đây]</div>
-                          <div class="info">
-                            <p><strong>Sản phẩm:</strong> ${selectedQRPallet.san_pham.ten_san_pham}</p>
-                            <p><strong>Số lượng:</strong> ${selectedQRPallet.so_thung_con_lai} thùng</p>
-                            <p><strong>Vị trí:</strong> ${selectedQRPallet.vi_tri_kho?.ma_vi_tri || 'N/A'}</p>
-                          </div>
-                        </div>
-                      </body>
-                    </html>
-                  `);
-                  printWindow.document.close();
-                  setTimeout(() => printWindow.print(), 500);
+                  setShowPrintQRModal(false);
+                  setPrintQRData(null);
                 }}
               >
-                <i className="icon-printer"></i>
-                In QR
+                <i className="icon-x"></i>
               </button>
-              
-              <button 
-                className="btn btn-primary"
+            </div>
+            <div className="qr-modal-body" style={{ textAlign: 'center' }}>
+              {printQRData.qr_code_url ? (
+                <img
+                  src={`http://127.0.0.1:8001${printQRData.qr_code_url}`}
+                  alt="QR Code"
+                  style={{ width: 256, height: 256 }}
+                />
+              ) : printQRData.qr_code ? (
+                <QRCodeCanvas value={printQRData.qr_code} size={256} />
+              ) : (
+                <p>Không có dữ liệu QR code.</p>
+              )}
+              <div style={{ marginTop: 16 }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowPrintQRModal(false);
+                    setPrintQRData(null);
+                  }}
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateQRModal && createQRUrl && (
+        <div className="qr-modal">
+          <div className="qr-modal-content">
+            <div className="qr-modal-header">
+              <h3>QR Code - {createQRMaPallet}</h3>
+              <button
+                className="close-button"
                 onClick={() => {
-                  // Download QR as image
-                  const canvas = document.querySelector('.qr-modal canvas');
-                  if (canvas) {
+                  setShowCreateQRModal(false);
+                  setCreateQRUrl('');
+                  setCreateQRMaPallet('');
+                }}
+              >
+                <i className="icon-x"></i>
+              </button>
+            </div>
+            <div className="qr-modal-body" style={{ textAlign: 'center' }}>
+              <img
+                src={createQRUrl}
+                alt="QR Code"
+                style={{ width: 256, height: 256 }}
+                className="qr-print-image"
+              />
+              <div style={{ marginTop: 16 }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowCreateQRModal(false);
+                    setCreateQRUrl('');
+                    setCreateQRMaPallet('');
+                  }}
+                >
+                  Đóng
+                </button>
+                <button
+                  className="btn btn-info"
+                  style={{ marginLeft: 8 }}
+                  onClick={() => {
+                    // Tạo thẻ a ẩn để download ảnh
                     const link = document.createElement('a');
-                    link.download = `QR-${selectedQRPallet.ma_pallet}.png`;
-                    link.href = canvas.toDataURL();
+                    link.href = createQRUrl;
+                    link.download = `${createQRMaPallet || 'qr_code'}.png`;
+                    document.body.appendChild(link);
                     link.click();
-                  }
-                }}
-              >
-                <i className="icon-download"></i>
-                Tải về
-              </button>
+                    document.body.removeChild(link);
+                  }}
+                >
+                  Save QR
+                </button>
+              </div>
             </div>
           </div>
         </div>

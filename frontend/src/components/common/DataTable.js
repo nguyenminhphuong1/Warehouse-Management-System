@@ -364,7 +364,7 @@ const DataTable = ({
         {/* Search */}
         {searchable && (
           <div className="data-table-search">
-            <span className="data-table-search-icon">🔍</span>
+            <span className="data-table-search-icon"></span>
             <input
               type="text"
               className="data-table-search-input"

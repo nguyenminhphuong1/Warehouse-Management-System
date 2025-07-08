@@ -407,7 +407,7 @@ const BaoTri = ({ maintenance = [], locations = [], onUpdateMaintenance }) => {
             onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
             className="search-input"
           />
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
         </div>
 
         <div className="filters-group">

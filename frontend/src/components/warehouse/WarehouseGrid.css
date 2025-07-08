@@ -1186,3 +1186,26 @@
     min-height: 44px;
   }
 }
+
+.warehouse-simple-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 24px;
+}
+.warehouse-simple-cell {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 120px;
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  box-shadow: 0 1px 2px #eee;
+  font-size: 15px;
+}
+.cell-pallet { font-weight: bold; color: #2d7a2d; margin-bottom: 4px; }
+.cell-vi-tri { color: #1a1a1a; margin-bottom: 2px; }
+.cell-khu-vuc { color: #888; font-size: 13px; }

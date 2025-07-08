@@ -1,6 +1,6 @@
 // frontend/src/pages/NhapHang/NhapHang.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
 import ThemPallet from './ThemPallet';
 import DanhSachPallet from './DanhSachPallet';
@@ -39,111 +39,6 @@ const NhapHang = () => {
     total_boxes: 0,
     utilization_rate: 0
   });
-
-  // Mock data - will be replaced with API calls
-  useEffect(() => {
-    loadMockData();
-  }, []);
-
-  const loadMockData = () => {
-    setLoading(true);
-    
-    // Mock warehouse areas
-    const mockAreas = [
-      { id: 1, ma_khu_vuc: 'A', ten_khu_vuc: 'Khu vực A - Bia & Nước ngọt', kich_thuoc_hang: 5, kich_thuoc_cot: 10 },
-      { id: 2, ma_khu_vuc: 'B', ten_khu_vuc: 'Khu vực B - Nước suối', kich_thuoc_hang: 4, kich_thuoc_cot: 8 },
-      { id: 3, ma_khu_vuc: 'C', ten_khu_vuc: 'Khu vực C - Hàng đặc biệt', kich_thuoc_hang: 3, kich_thuoc_cot: 6 },
-      { id: 4, ma_khu_vuc: 'D', ten_khu_vuc: 'Khu vực D - Hóa chất', kich_thuoc_hang: 2, kich_thuoc_cot: 4 }
-    ];
-
-    // Mock products
-    const mockProducts = [
-      { id: 1, ma_san_pham: 'SP001', ten_san_pham: 'Heineken 330ml', nhom_hang: 'Bia', don_vi_tinh: 'thùng' },
-      { id: 2, ma_san_pham: 'SP002', ten_san_pham: 'Tiger Crystal 355ml', nhom_hang: 'Bia', don_vi_tinh: 'thùng' },
-      { id: 3, ma_san_pham: 'SP003', ten_san_pham: 'Coca Cola 330ml', nhom_hang: 'Nước ngọt', don_vi_tinh: 'thùng' },
-      { id: 4, ma_san_pham: 'SP004', ten_san_pham: 'Pepsi 355ml', nhom_hang: 'Nước ngọt', don_vi_tinh: 'thùng' },
-      { id: 5, ma_san_pham: 'SP005', ten_san_pham: 'Lavie 500ml', nhom_hang: 'Nước suối', don_vi_tinh: 'thùng' },
-      { id: 6, ma_san_pham: 'SP006', ten_san_pham: 'Aquafina 1.5L', nhom_hang: 'Nước suối', don_vi_tinh: 'thùng' }
-    ];
-
-    // Mock suppliers
-    const mockSuppliers = [
-      { id: 1, ma_nha_cung_cap: 'NCC001', ten_nha_cung_cap: 'Công ty TNHH Heineken Việt Nam' },
-      { id: 2, ma_nha_cung_cap: 'NCC002', ten_nha_cung_cap: 'Công ty Coca-Cola Việt Nam' },
-      { id: 3, ma_nha_cung_cap: 'NCC003', ten_nha_cung_cap: 'Công ty Lavie' },
-      { id: 4, ma_nha_cung_cap: 'NCC004', ten_nha_cung_cap: 'Công ty TH True Milk' }
-    ];
-
-    // Mock pallets
-    const mockPallets = [
-      {
-        id: 1,
-        ma_pallet: 'P-2024-001',
-        san_pham: { id: 1, ten_san_pham: 'Heineken 330ml', nhom_hang: 'Bia' },
-        so_thung_ban_dau: 50,
-        so_thung_con_lai: 50,
-        vi_tri_kho: { ma_vi_tri: 'A1A1', khu_vuc: 'A' },
-        ngay_san_xuat: '2024-01-15',
-        han_su_dung: '2025-01-15',
-        ngay_kiem_tra_cl: '2024-07-15',
-        trang_thai: 'Mới',
-        nguoi_tao: 'admin',
-        created_at: '2024-01-16T08:30:00'
-      },
-      {
-        id: 2,
-        ma_pallet: 'P-2024-002',
-        san_pham: { id: 3, ten_san_pham: 'Coca Cola 330ml', nhom_hang: 'Nước ngọt' },
-        so_thung_ban_dau: 60,
-        so_thung_con_lai: 45,
-        vi_tri_kho: { ma_vi_tri: 'A2B1', khu_vuc: 'A' },
-        ngay_san_xuat: '2024-01-10',
-        han_su_dung: '2024-12-10',
-        ngay_kiem_tra_cl: '2024-06-10',
-        trang_thai: 'Đã_mở',
-        nguoi_tao: 'staff1',
-        created_at: '2024-01-11T09:15:00'
-      },
-      {
-        id: 3,
-        ma_pallet: 'P-2024-003',
-        san_pham: { id: 5, ten_san_pham: 'Lavie 500ml', nhom_hang: 'Nước suối' },
-        so_thung_ban_dau: 80,
-        so_thung_con_lai: 80,
-        vi_tri_kho: { ma_vi_tri: 'B1A1', khu_vuc: 'B' },
-        ngay_san_xuat: '2024-02-01',
-        han_su_dung: '2025-02-01',
-        ngay_kiem_tra_cl: '2024-08-01',
-        trang_thai: 'Mới',
-        nguoi_tao: 'admin',
-        created_at: '2024-02-02T07:45:00'
-      }
-    ];
-
-    // Mock statistics
-    const mockStats = {
-      total_pallets: mockPallets.length,
-      pallets_moi: mockPallets.filter(p => p.trang_thai === 'Mới').length,
-      pallets_da_mo: mockPallets.filter(p => p.trang_thai === 'Đã_mở').length,
-      pallets_sap_het_han: mockPallets.filter(p => {
-        const today = new Date();
-        const expiry = new Date(p.han_su_dung);
-        const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-        return diffDays <= 30 && diffDays > 0;
-      }).length,
-      total_boxes: mockPallets.reduce((sum, p) => sum + p.so_thung_con_lai, 0),
-      utilization_rate: 75.5
-    };
-
-    setTimeout(() => {
-      setWarehouseAreas(mockAreas);
-      setProducts(mockProducts);
-      setSuppliers(mockSuppliers);
-      setPallets(mockPallets);
-      setStatistics(mockStats);
-      setLoading(false);
-    }, 1000);
-  };
 
   const showToast = (type, message) => {
     setToast({ show: true, type, message });
@@ -267,7 +162,7 @@ const NhapHang = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="statistics-section">
+      {/* <div className="statistics-section">
         <div className="stats-grid">
           <div className="stat-card total">
             <div className="stat-icon">
@@ -329,7 +224,7 @@ const NhapHang = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Navigation Tabs */}
       <div className="tabs-section">
@@ -399,13 +294,7 @@ const NhapHang = () => {
         )}
         
         {activeTab === 'kho' && (
-          <WarehouseGrid
-            areas={warehouseAreas}
-            pallets={pallets}
-            onPositionClick={(position) => {
-              console.log('Position clicked:', position);
-            }}
-          />
+          <WarehouseGrid />
         )}
         
         {activeTab === 'chi-tiet' && selectedPallet && (

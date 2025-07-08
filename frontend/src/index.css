@@ -13,11 +13,13 @@
 }
 
 /* Root Variables */
-html {
+html, body, #root, .App {
+  height: auto !important;
+  min-height: 100vh;
+  overflow: auto !important;
   font-size: 16px;
   line-height: 1.6;
   scroll-behavior: smooth;
-  height: 100%;
 }
 
 body {
@@ -30,8 +32,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #f8f9fa;
   color: #2c3e50;
-  min-height: 100vh;
-  overflow-x: hidden;
 }
 
 /* Code Elements */
@@ -57,14 +57,12 @@ pre {
 
 /* Root Container */
 #root {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 /* Error Boundary Styles */
 .error-boundary {
-  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,7 +166,6 @@ pre {
 
 /* Browser Compatibility Error */
 .browser-compatibility-error {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;

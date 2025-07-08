@@ -3,6 +3,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 class KhuVuc(models.Model):
     """
@@ -46,6 +47,7 @@ class KhuVuc(models.Model):
     tai_trong_max = models.DecimalField(
         max_digits=10,
         decimal_places=2,
+        blank=True,
         default=0,
         validators=[MinValueValidator(0)],
         help_text="Tải trọng tối đa (kg)"
@@ -54,6 +56,7 @@ class KhuVuc(models.Model):
     nhiet_do_min = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        blank=True,
         default=0,
         help_text="Nhiệt độ tối thiểu (°C)"
     )
@@ -61,6 +64,7 @@ class KhuVuc(models.Model):
     nhiet_do_max = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        blank=True,
         default=40,
         help_text="Nhiệt độ tối đa (°C)"
     )
@@ -68,6 +72,7 @@ class KhuVuc(models.Model):
     do_am_min = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        blank=True,
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         help_text="Độ ẩm tối thiểu (%)"
@@ -76,6 +81,7 @@ class KhuVuc(models.Model):
     do_am_max = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        blank=True,
         default=100,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         help_text="Độ ẩm tối đa (%)"
@@ -107,15 +113,16 @@ class KhuVuc(models.Model):
         return f"{self.ma_khu_vuc} - {self.ten_khu_vuc}"
     
     def clean(self):
-        """Validate model"""
-        super().clean()
-        
+        """Validate model"""  
+        errors = {}      
         if self.nhiet_do_min >= self.nhiet_do_max:
-            raise ValidationError('Nhiệt độ tối thiểu phải nhỏ hơn nhiệt độ tối đa')
-        
+            errors['nhiet_do_min'] = "Nhiệt độ tối thiểu phải nhỏ hơn nhiệt độ tối đa."        
         if self.do_am_min >= self.do_am_max:
-            raise ValidationError('Độ ẩm tối thiểu phải nhỏ hơn độ ẩm tối đa')
-    
+            errors['do_am_min'] = "Độ ẩm tối thiểu phải nhỏ hơn độ ẩm tối đa."    
+
+        if errors:
+            raise ValidationError(errors)
+
     @property
     def tong_vi_tri(self):
         """Tổng số vị trí trong khu vực"""
@@ -227,6 +234,45 @@ class KhuVuc(models.Model):
                     created_count += 1
         
         return created_count
+    
+    def set_maintenance(self, reason="", user=None):
+        """Đặt vị trí vào trạng thái bảo trì"""
+        if self.vi_tri_set.filter(pallet__isnull=False).exists():
+            raise ValidationError("Không thể bảo trì khu vực có hàng")
+        
+        self.trang_thai = 'Bảo_trì'
+        self.ghi_chu = f"Bảo trì: {reason}"
+        self.save()
+        
+        # Tạo task bảo trì
+        from apps.inventory.models.bao_tri import BaoTri
+        BaoTri.objects.create(
+            ma_bao_tri=f"BT-{self.ma_khu_vuc}-{timezone.now().strftime('%Y%m%d')}",
+            tieu_de=f"Bảo trì vị trí {self.ma_khu_vuc}",
+            loai_bao_tri='Bảo_dưỡng',
+            doi_tuong='Vị_trí',
+            doi_tuong_id=str(self.id),
+            mo_ta=reason,
+            nguoi_tao=user.username if user else 'System',
+            trang_thai='Kế_hoạch'
+        )
+    
+    def complete_maintenance(self, user=None):
+        """Hoàn thành bảo trì"""
+        self.trang_thai = 'Trống'
+        self.ghi_chu = ""
+        self.save()
+        
+        # Cập nhật task bảo trì
+        from apps.inventory.models.bao_tri import BaoTri
+        BaoTri.objects.filter(
+            doi_tuong='Khu_vực',
+            doi_tuong_id=str(self.id),
+            trang_thai__in=['Kế_hoạch', 'Đang_thực_hiện']
+        ).update(
+            trang_thai='Hoàn_thành',
+            thoi_gian_ket_thuc=timezone.now()
+        )
     
     def get_statistics(self):
         """Lấy thống kê khu vực"""

@@ -589,7 +589,7 @@ const XuatHangChiTiet = ({ orders = [], exportProgress = {} }) => {
         <div className="no-order-state">
           <div className="no-order-icon">📦</div>
           <h3>Chọn đơn hàng để xuất</h3>
-          <p>Vui lòng chọn một đơn hàng từ danh sách để bắt đầu quy trình xuất hàng.</p>
+          <p>Vui lòng chọn một đơn hàng từ danh sách đơn hàng.</p>
           <button 
             className="btn btn-primary"
             onClick={() => navigate('/xuat-hang/danh-sach-don')}

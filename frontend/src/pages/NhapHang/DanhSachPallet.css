@@ -2,8 +2,10 @@
 
 .danh-sach-pallet {
   padding: 1.5rem;
-  background: #f8f9fa;
+  background: #f4f6fb;
   min-height: 100vh;
+  color: #222b45;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 /* Loading and Error States */
@@ -105,12 +107,14 @@
 .stat-content h3 {
   font-size: 2rem;
   font-weight: 700;
-  color: #2c3e50;
+  /* color: #2c3e50; */
+  color: #000 !important;
+  
   margin: 0 0 0.25rem 0;
 }
 
 .stat-content p {
-  color: #6c757d;
+  color: #000 !important;
   margin: 0;
   font-size: 0.9rem;
   font-weight: 500;
@@ -227,34 +231,42 @@
 /* Table Container */
 .table-container {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  overflow-x: auto;
   margin-bottom: 1.5rem;
+  border: 1px solid #e3e6ef;
 }
 
 /* Table Styles */
 .pallet-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
+  min-width: 1200px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 1rem;
+  color: #222b45;
+  background: #fff;
 }
 
 .pallet-table thead {
-  background: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+  background: linear-gradient(90deg, #e3f0ff 0%, #f8f9fa 100%);
+  border-bottom: 2px solid #b6c6e3;
 }
 
 .pallet-table th {
-  padding: 1rem 0.75rem;
+  padding: 1.1rem 0.8rem;
   text-align: left;
-  font-weight: 600;
-  color: #495057;
+  font-weight: 700;
+  color: #1a237e;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-size: 0.8rem;
-  border-bottom: 1px solid #dee2e6;
-  position: relative;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #e3e6ef;
+  background: #f4f6fb;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .pallet-table th.center {
@@ -294,9 +306,11 @@
 }
 
 .pallet-table td {
-  padding: 1rem 0.75rem;
+  padding: 1rem 0.8rem;
   border-bottom: 1px solid #f1f3f4;
   vertical-align: middle;
+  background: #fff;
+  transition: background 0.2s;
 }
 
 .pallet-table td.center {
@@ -308,11 +322,12 @@
 }
 
 .pallet-table tbody tr:hover {
-  background: #f8f9fa;
+  background: #e3f0ff;
 }
 
 .pallet-table tbody tr.selected {
-  background: #e3f2fd;
+  background: linear-gradient(90deg, #e3f2fd 0%, #f3e5f5 100%);
+  border-left: 4px solid #2196f3;
 }
 
 /* Table Cell Content */
@@ -499,29 +514,48 @@
 }
 
 .btn-icon {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
-  transition: all 0.2s ease;
+  gap: 0.5em;
+  padding: 0.5em 1em;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: #fff;
+  background: #1976d2;
+  transition: background 0.2s, transform 0.2s;
+  width: auto;
 }
 
-.btn-icon:hover {
-  transform: translateY(-1px);
-}
 
 .btn-icon.btn-info {
-  background: #17a2b8;
-  color: white;
+  /* background: #1976d2; */
+  color: #fff;
 }
 
 .btn-icon.btn-info:hover {
-  background: #117a8b;
+  background: #1565c0;
+}
+
+.btn-icon .icon-eye,
+.btn-icon .icon-qr-code {
+  font-size: 1.2em;
+  margin-right: 0.5em;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.btn-icon .icon-qr-code:last-child,
+.btn-icon .icon-eye:last-child {
+  margin-right: 0;
+}
+
+.btn-icon:hover {
+  background: #1565c0;
+  transform: translateY(-2px) scale(1.04);
 }
 
 .btn-icon.btn-warning {
@@ -549,6 +583,14 @@
 
 .btn-icon.btn-danger:hover {
   background: #c82333;
+}
+
+.btn-icon.btn-success {
+  background: #28a745;
+  color: #fff;
+}
+.btn-icon.btn-success:hover {
+  background: #218838;
 }
 
 /* Pagination */
@@ -699,9 +741,9 @@
 
 .close-button {
   background: none;
-  border: none;
+  border: 2px solid #dc3545;
   font-size: 1.5rem;
-  color: #6c757d;
+  color: #dc3545;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 50%;
@@ -709,13 +751,15 @@
 }
 
 .close-button:hover {
-  background: #e9ecef;
-  color: #495057;
+  background: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
 }
 
 .qr-modal-body {
-  padding: 2rem;
-  text-align: center;
+  flex: 1 1 auto;
+  padding: 1.2rem 2rem 0.5rem 2rem;
+  overflow: hidden;
 }
 
 .qr-code-container {
@@ -725,7 +769,10 @@
 }
 
 .qr-info {
-  text-align: left;
+  max-height: 700px;
+  overflow-y: auto;
+  padding-right: 8px;
+  padding-bottom: 32px;
 }
 
 .qr-details {
@@ -783,8 +830,8 @@
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .danh-sach-pallet {
-    background: #1a1a1a;
-    color: #e9ecef;
+    background: #181c24;
+    color: #e3e6ef;
   }
 
   .stat-card,
@@ -792,12 +839,12 @@
   .table-container,
   .pagination-section,
   .qr-modal-content {
-    background: #2d2d2d;
-    color: #e9ecef;
+    background: #23293a;
+    color: #e3e6ef;
   }
 
   .pallet-table thead {
-    background: #3d3d3d;
+    background: #23293a;
   }
 
   .pallet-table tbody tr:hover {
@@ -983,6 +1030,7 @@
 
   .stat-content h3 {
     font-size: 1.5rem;
+    color: #000 !important;
   }
 
   .bulk-buttons {
@@ -1294,4 +1342,182 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 101;
+}
+
+/* Cuộn ngang cho bảng */
+.table-container::-webkit-scrollbar {
+  height: 10px;
+}
+.table-container::-webkit-scrollbar-thumb {
+  background: #b6c6e3;
+  border-radius: 6px;
+}
+.table-container {
+  scrollbar-color: #b6c6e3 #f4f6fb;
+  scrollbar-width: thin;
+}
+
+/* Responsive: bảng cuộn ngang trên mobile */
+@media (max-width: 900px) {
+  .table-container {
+    overflow-x: auto;
+  }
+  .pallet-table {
+    min-width: 900px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .pallet-table {
+    min-width: 700px;
+    font-size: 0.9rem;
+  }
+  .danh-sach-pallet {
+    padding: 0.5rem;
+  }
+}
+
+/* Đổi màu chữ cho dark mode */
+@media (prefers-color-scheme: dark) {
+  .danh-sach-pallet {
+    background: #181c24;
+    color: #e3e6ef;
+  }
+  .table-container, .pallet-table, .pallet-table th, .pallet-table td {
+    background: #23293a;
+    color: #e3e6ef;
+    border-color: #2c3550;
+  }
+  .pallet-table thead {
+    background: #23293a;
+  }
+  .pallet-table th {
+    color: #90caf9;
+  }
+  .pallet-table td.important {
+    color: #90caf9;
+  }
+  .pallet-table td.status {
+    background: linear-gradient(90deg, #1976d2 0%, #0d47a1 100%);
+    color: #fff;
+  }
+  .pallet-table td.expiry {
+    background: #3e2723;
+    color: #ffab91;
+  }
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto 1rem auto;
+  background: #fff;
+}
+.detail-table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #e3e6ef;
+  font-size: 1rem;
+}
+.detail-label {
+  font-weight: 600;
+  color: #1976d2;
+  width: 40%;
+  background: #f4f6fb;
+  text-align: left;
+}
+.detail-value {
+  color: #2c3e50;
+  text-align: left;
+  word-break: break-word;
+}
+.detail-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* In modal chỉ hiển thị nội dung QR khi in */
+@media print {
+  .qr-modal,
+  .qr-modal-content,
+  .qr-modal-header,
+  .qr-modal-actions,
+  .close-button,
+  .btn,
+  .btn-icon,
+  .danh-sach-pallet,
+  .filters-section,
+  .bulk-actions,
+  .pagination-section,
+  .action-buttons {
+    display: none !important;
+  }
+  .qr-modal-print {
+    display: block !important;
+    position: static !important;
+    background: white !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+  .qr-modal-print .qr-modal-body {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .qr-print-image {
+    visibility: visible !important;
+    position: absolute !important;
+    left: 0; right: 0; top: 0; bottom: 0;
+    margin: auto;
+    width: 256px !important;
+    height: 256px !important;
+    display: block !important;
+    box-shadow: none !important;
+    background: none !important;
+  }
+}
+
+/* Icon QR Code */
+.icon-qr-code {
+  display: inline-block;
+  width: 1.3em;
+  height: 1.3em;
+  background: no-repeat center/contain;
+  vertical-align: middle;
+  /* Nếu dùng font icon, có thể bỏ background-image */
+  /* Nếu dùng SVG sprite hoặc base64, thay đổi background-image bên dưới */
+  /* background-image: url('/path/to/qr-code.svg'); */
+  /* Ví dụ dùng fontawesome: */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+}
+
+.icon-qr-code:before {
+  content: "\f029"; /* FontAwesome QR code unicode */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+}
+
+/* Icon Eye */
+.icon-eye {
+  display: inline-block;
+  width: 1.3em;
+  height: 1.3em;
+  background: no-repeat center/contain;
+  vertical-align: middle;
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+}
+
+.icon-eye:before {
+  content: "\f06e"; /* FontAwesome Eye unicode */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
 }

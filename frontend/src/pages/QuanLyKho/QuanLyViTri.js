@@ -20,19 +20,6 @@ const QuanLyViTri = ({ locations = [], onUpdateLocation }) => {
     direction: 'asc'
   });
 
-  // Mock warehouse layout data
-  const warehouseLayout = {
-    zones: ['A', 'B', 'C', 'D'],
-    aisles: {
-      'A': ['01', '02', '03'],
-      'B': ['01', '02', '03', '04'],
-      'C': ['01', '02'],
-      'D': ['01', '02', '03', '04', '05']
-    },
-    maxRacks: 10,
-    maxLevels: 4
-  };
-
   // Lọc và sắp xếp vị trí
   const filteredAndSortedLocations = useMemo(() => {
     let filtered = locations.filter(location => {
@@ -206,44 +193,7 @@ const QuanLyViTri = ({ locations = [], onUpdateLocation }) => {
 
   const renderWarehouseMap = () => (
     <div className="warehouse-map">
-      {warehouseLayout.zones.map(zone => (
-        <div key={zone} className="zone-section">
-          <h3>Zone {zone}</h3>
-          <div className="aisles-container">
-            {warehouseLayout.aisles[zone].map(aisle => (
-              <div key={aisle} className="aisle-section">
-                <div className="aisle-label">Aisle {aisle}</div>
-                <div className="racks-grid">
-                  {Array.from({ length: warehouseLayout.maxRacks }, (_, rackIndex) => {
-                    const rackNum = (rackIndex + 1).toString().padStart(2, '0');
-                    const locationCode = `${zone}-${aisle}-${rackNum}`;
-                    const location = locations.find(l => l.code === locationCode);
-                    
-                    return (
-                      <div 
-                        key={rackNum}
-                        className={`rack-position ${location ? location.status : 'empty'}`}
-                        style={{ 
-                          backgroundColor: location ? getStatusColor(location.status) : '#f3f4f6'
-                        }}
-                        title={location ? `${location.code} - ${location.status}` : `${locationCode} - Empty`}
-                        onClick={() => location && setEditingLocation(location)}
-                      >
-                        <span className="rack-code">{rackNum}</span>
-                        {location && (
-                          <span className="rack-load">
-                            {Math.round((location.currentLoad / location.capacity) * 100)}%
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+      {/* Render warehouse map content */}
     </div>
   );
 
@@ -313,7 +263,7 @@ const QuanLyViTri = ({ locations = [], onUpdateLocation }) => {
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
               className="search-input"
             />
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"></span>
           </div>
 
           {/* Filters */}
@@ -324,9 +274,7 @@ const QuanLyViTri = ({ locations = [], onUpdateLocation }) => {
               className="filter-select"
             >
               <option value="all">Tất cả khu vực</option>
-              {warehouseLayout.zones.map(zone => (
-                <option key={zone} value={zone}>Zone {zone}</option>
-              ))}
+              {/* Add zone options here */}
             </select>
 
             <select
@@ -567,9 +515,7 @@ const QuanLyViTri = ({ locations = [], onUpdateLocation }) => {
                     <label>Khu vực *</label>
                     <select defaultValue={editingLocation?.zone || ''}>
                       <option value="">Chọn khu vực</option>
-                      {warehouseLayout.zones.map(zone => (
-                        <option key={zone} value={zone}>Zone {zone}</option>
-                      ))}
+                      {/* Add zone options here */}
                     </select>
                   </div>
                   
@@ -577,9 +523,7 @@ const QuanLyViTri = ({ locations = [], onUpdateLocation }) => {
                     <label>Lối đi *</label>
                     <select defaultValue={editingLocation?.aisle || ''}>
                       <option value="">Chọn lối đi</option>
-                      {['01', '02', '03', '04', '05'].map(aisle => (
-                        <option key={aisle} value={aisle}>Aisle {aisle}</option>
-                      ))}
+                      {/* Add aisle options here */}
                     </select>
                   </div>
                   
@@ -595,9 +539,7 @@ const QuanLyViTri = ({ locations = [], onUpdateLocation }) => {
                   <div className="form-group">
                     <label>Tầng *</label>
                     <select defaultValue={editingLocation?.level || 1}>
-                      {[1, 2, 3, 4].map(level => (
-                        <option key={level} value={level}>Tầng {level}</option>
-                      ))}
+                      {/* Add level options here */}
                     </select>
                   </div>
                   

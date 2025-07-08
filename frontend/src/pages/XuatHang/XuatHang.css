@@ -407,3 +407,8 @@
     transform: none;
   }
 }
+
+:root, body, html {
+    min-height: 100vh;
+    height: auto !important;
+}
