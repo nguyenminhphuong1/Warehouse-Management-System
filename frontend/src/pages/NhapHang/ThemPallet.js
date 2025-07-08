@@ -105,7 +105,7 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
       setSuppliersLoading(true);
       setSuppliersError('');
       console.log('Fetching suppliers...');
-      api.get('/api/warehouse/nhacungcap/')
+      api.get('/warehouse/nhacungcap/')
         .then(res => {
           const data = res.data;
           console.log('Suppliers data:', suppliers);
@@ -126,7 +126,7 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
       setProductsLoading(true);
       setProductsError('');
       console.log('Fetching products...');
-      api.get('/api/warehouse/sanpham/')
+      api.get('/warehouse/sanpham/')
         .then(res => {
           const data = res.data;
           console.log('Products data:', data);
@@ -256,7 +256,7 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
     console.log('Submitting pallet data:', palletData);
 
     try {
-      const response = await api.post('/api/warehouse/pallet/', palletData);
+      const response = await api.post('/warehouse/pallet/', palletData);
       const result = response.data;
       console.log('Pallet created:', result);
       onSubmit(result); // Trả về dữ liệu vừa tạo từ backend
@@ -297,7 +297,7 @@ const ThemPallet = ({ onSubmit, onCancel, warehouseAreas, loading }) => {
     if (availableLocations.length === 0 && !locationsLoading) {
       setLocationsLoading(true);
       setLocationsError('');
-      api.get('/api/warehouse/vitri/get_available/')
+      api.get('/warehouse/vitri/get_available/')
         .then(res => {
           const data = res.data;
           setAvailableLocations(Array.isArray(data) ? data : (data.results || []));

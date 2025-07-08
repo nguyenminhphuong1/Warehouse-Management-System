@@ -62,13 +62,13 @@ const XuatHang = () => {
     try {
       // Gọi song song
       const [storeRes, orderRes] = await Promise.all([
-        fetch('http://127.0.0.1:8000/api/orders/cuahang/', {
+        fetch('http://127.0.0.1:8001/api/orders/cuahang/', {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         }),
-        fetch('http://127.0.0.1:8000/api/orders/donxuat/', {
+        fetch('http://127.0.0.1:8001/api/orders/donxuat/', {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`

@@ -4,20 +4,21 @@ from drf_yasg import openapi
 from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib import admin
+
 from django.http import JsonResponse
 from django.conf import settings
-from apps.accounts.views.auth import LoginView, LogoutView
+from apps.accounts.views.auth import LoginView, LogoutView, CustomTokenObtainPairView
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
-
+    
 )
 
 def index(request):
     return JsonResponse({"message": " 5 Backend is running!"})
 
-schema_view = get_schema_view(
+schema_view = get_schema_view(  
     openapi.Info(
         title="API để sử dụng các chức năng",
         default_version='v1',
@@ -33,7 +34,7 @@ urlpatterns = [
     path("", index),
     path("admin/", admin.site.urls),
     path('api/auth/login/', LoginView.as_view(), name='login'),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/login/', LoginView.as_view(), name='login'),
     path('api/token/logout/', LogoutView.as_view(), name='logout'),

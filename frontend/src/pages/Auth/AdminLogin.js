@@ -15,7 +15,7 @@ const AdminLogin = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post("http://127.0.0.1:8000/admin/", form);
+      const res = await axios.post("http://127.0.0.1:8001/admin/", form);
       alert("Đăng nhập thành công!");
       // window.location.href = "/dashboard";
     } catch (err) {

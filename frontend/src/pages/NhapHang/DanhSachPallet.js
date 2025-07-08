@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import './DanhSachPallet.css';
+import api from '../../services/api';
 
 const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport }) => {
   const [pallets, setPallets] = useState([]);
@@ -49,24 +50,12 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
     const loadPallets = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/warehouse/pallet/get_dict/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
+        // Sử dụng axios instance đã cấu hình baseURL và interceptor
+        const response = await api.get('/warehouse/pallet/get_dict/');
+        const data = response.data;
         console.log('Fetched pallet data:', data); // DEBUG
-        
         // Transform API data to match component structure
         const transformedPallets = data.results || data || [];
-        
         setPallets(transformedPallets);
         setPagination(prev => ({
           ...prev,
@@ -272,14 +261,8 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
         console.log('Huỷ xoá pallet:', id);
         return;
       }
-      const response = await fetch(`http://127.0.0.1:8000/api/warehouse/pallet/${id}/`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Lỗi xoá pallet');
+      const response = await api.delete(`/warehouse/pallet/${id}/`);
+      if (response.status !== 204) throw new Error('Lỗi xoá pallet');
       setPallets(prev => prev.filter(p => p.id !== id));
       alert('Đã xoá pallet thành công!');
       console.log('Đã xoá pallet thành công:', id);
@@ -533,16 +516,11 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                         console.log('Xem chi tiết pallet:', pallet.id);
                         e.stopPropagation();
                         try {
-                          const response = await fetch(`http://127.0.0.1:8000/api/warehouse/pallet/${pallet.id}/`, {
-                            method: 'GET',
-                            headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('token')}`
-                            }
-                          });
-                          if (!response.ok) {
+                          const response = await api.get(`/warehouse/pallet/${pallet.id}/`);
+                          if (response.status !== 200) {
                             throw new Error(`Lỗi lấy chi tiết pallet: ${response.status}`);
                           }
-                          const data = await response.json();
+                          const data = response.data;
                           setSelectedQRPallet(data);
                           setShowQRModal(true);
                           console.log('Đã xem chi tiết pallet:', pallet.id);
@@ -561,18 +539,13 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                         console.log('Xem QR code pallet:', pallet.id);
                         e.stopPropagation();
                         try {
-                          const response = await fetch(`http://127.0.0.1:8000/api/warehouse/pallet/${pallet.id}/qr_code/`, {
-                            method: 'GET',
-                            headers: {
-                              'Authorization': `Bearer ${localStorage.getItem('token')}`
-                            }
-                          });
-                          if (!response.ok) {
+                          const response = await api.get(`/warehouse/pallet/${pallet.id}/qr_code/`);
+                          if (response.status !== 200) {
                             throw new Error(`Lỗi lấy QR Code: ${response.status}`);
                           }
-                          const data = await response.json();
+                          const data = response.data;
                           if (data.qr_code_url) {
-                            setCreateQRUrl(`http://127.0.0.1:8000${data.qr_code_url}`);
+                            setCreateQRUrl(`http://127.0.0.1:8001${data.qr_code_url}`);
                             setCreateQRMaPallet(pallet.ma_pallet || data.ma_pallet || '');
                             setShowCreateQRModal(true);
                             console.log('Đã xem và in QR code pallet:', pallet.id);
@@ -732,7 +705,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                         else displayValue = JSON.stringify(value);
                       }
                       if (key === 'qr_code_url' && value) {
-                        displayValue = <a href={`http://127.0.0.1:8000${value}`} target="_blank" rel="noopener noreferrer">Xem QR</a>;
+                        displayValue = <a href={`http://127.0.0.1:8001${value}`} target="_blank" rel="noopener noreferrer">Xem QR</a>;
                       }
                       return (
                         <tr key={key}>
@@ -749,7 +722,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                       className="btn btn-info"
                       onClick={() => {
                         console.log('Tạo QR từ URL:', selectedQRPallet.qr_code_url);
-                        window.open(`http://127.0.0.1:8000${selectedQRPallet.qr_code_url}`, '_blank');
+                        window.open(`http://127.0.0.1:8001${selectedQRPallet.qr_code_url}`, '_blank');
                       }}
                     >
                       Tạo QR
@@ -792,7 +765,7 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
             <div className="qr-modal-body" style={{ textAlign: 'center' }}>
               {printQRData.qr_code_url ? (
                 <img
-                  src={`http://127.0.0.1:8000${printQRData.qr_code_url}`}
+                  src={`http://127.0.0.1:8001${printQRData.qr_code_url}`}
                   alt="QR Code"
                   style={{ width: 256, height: 256 }}
                 />

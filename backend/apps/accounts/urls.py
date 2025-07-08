@@ -10,5 +10,5 @@ router.register(r'roles', RoleViewSet, basename='role')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('login/', LoginView.as_view(), name='login'),
+    path('login/api/', LoginView.as_view(), name='login'),
 ]

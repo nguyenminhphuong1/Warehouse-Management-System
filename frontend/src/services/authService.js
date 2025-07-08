@@ -1,6 +1,6 @@
 export const authService = {
   async login(username, password) {
-    const response = await fetch('http://localhost:8000/api/token/', {
+    const response = await fetch('http://localhost:8001/api/token/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

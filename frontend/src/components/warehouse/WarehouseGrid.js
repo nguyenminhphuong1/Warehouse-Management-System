@@ -163,8 +163,8 @@ const WarehouseGrid = ({
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetch('http://127.0.0.1:8000/api/warehouse/pallet/').then(res => res.json()),
-      fetch('http://127.0.0.1:8000/api/warehouse/vitri/').then(res => res.json())
+      fetch('http://127.0.0.1:8001/api/warehouse/pallet/').then(res => res.json()),
+      fetch('http://127.0.0.1:8001/api/warehouse/vitri/').then(res => res.json())
     ]).then(([palletData, vitriData]) => {
       // palletData: list of pallet, each has ma_pallet, vi_tri_kho (id or object)
       // vitriData: list of vi_tri, each has ma_vi_tri, khu_vuc, id
