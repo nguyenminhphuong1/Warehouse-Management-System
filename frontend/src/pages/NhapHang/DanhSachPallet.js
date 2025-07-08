@@ -269,8 +269,40 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
       alert('Đã xoá pallet thành công!');
       console.log('Đã xoá pallet thành công:', id);
     } catch (err) {
-      alert('Có lỗi khi xoá pallet!');
+      // Kiểm tra lỗi liên quan đến ProtectedError hoặc lịch sử xuất/nhập
+      if (
+        (err.response && err.response.data && typeof err.response.data === 'string' && err.response.data.includes('ProtectedError')) ||
+        (err.response && err.response.status === 500 && err.response.data && typeof err.response.data === 'string' && err.response.data.includes('LichSuXuatNhap'))
+      ) {
+        alert('Không thể xóa pallet này vì liên quan tới dữ liệu lịch sử xuất nhập. Vui lòng xoá lịch sử xuất/nhập của Pallet trước!');
+      } else {
+        alert('Có lỗi khi xoá pallet!');
+      }
       console.error('Lỗi khi xoá pallet:', err);
+    }
+  };
+
+  const handleDeleteLichSuPallet = async (palletId) => {
+    if (!palletId) return;
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xoá toàn bộ lịch sử xuất/nhập của pallet này?');
+    if (!confirmed) return;
+    try {
+      // 1. Lấy danh sách lịch sử xuất/nhập của pallet
+      const res = await api.get(`/orders/lichsuxuatnhap/?pallet_id=${palletId}`);
+      const lichSuList = res.data.results || res.data;
+      if (!lichSuList.length) {
+        alert('Không có lịch sử xuất/nhập để xoá!');
+        return;
+      }
+      // 2. Xoá từng bản ghi theo id
+      for (const lichSu of lichSuList) {
+        await api.delete(`/orders/lichsuxuatnhap/${lichSu.id}/`);
+      }
+      alert('Đã xoá toàn bộ lịch sử xuất/nhập của pallet thành công!');
+      window.location.reload();
+    } catch (err) {
+      alert('Có lỗi khi xoá lịch sử xuất/nhập của pallet!');
+      console.error('Lỗi khi xoá lịch sử xuất/nhập pallet:', err);
     }
   };
 
@@ -570,6 +602,14 @@ const DanhSachPallet = ({ onViewDetail, canEdit, canDelete, canPrint, canExport 
                       title="Xoá pallet này"
                     >
                       <i className="icon-trash-2"></i> Xoá
+                    </button>
+                    {/* Nút xoá lịch sử pallet */}
+                    <button
+                      className="btn-icon btn-warning"
+                      onClick={() => handleDeleteLichSuPallet(pallet.id)}
+                      title="Xoá lịch sử xuất/nhập của pallet này"
+                    >
+                      <i className="icon-trash"></i> Xoá lịch sử Pallet
                     </button>
                   </div>
                 </td>
