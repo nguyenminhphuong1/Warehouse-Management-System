@@ -322,3 +322,81 @@ class User(AbstractUser):
             'created_at': self.date_joined,
             'created_by': self.created_by.get_full_name() if self.created_by else None
         }
+    
+    def get_all_permissions(self):
+        """Get all effective permissions for user across all roles"""
+        from apps.accounts.models.permission import ModulePermission
+        if self.is_admin():
+            # Admin has all permissions
+            return {module[0]: ['full_access'] for module in ModulePermission.MODULE_CHOICES}
+        
+        permissions = {}
+        active_roles = self.user_roles.filter(
+            is_active=True,
+            role__is_active=True
+        ).select_related('role')
+        
+        for user_role in active_roles:
+            role_perms = user_role.role.get_permissions()
+            for perm in role_perms:
+                if not perm.is_valid():
+                    continue
+                    
+                if perm.module not in permissions:
+                    permissions[perm.module] = []
+                    
+                if perm.action == 'full_access':
+                    permissions[perm.module] = ['full_access']
+                    break
+                    
+                if perm.action not in permissions[perm.module]:
+                    permissions[perm.module].append(perm.action)
+                    
+        return permissions
+    
+    def has_module_permission(self, module_name, context=None):
+        """Check if user has any permission for a module"""
+        if self.is_admin():
+            return True
+            
+        return self.user_roles.filter(
+            is_active=True,
+            role__is_active=True,
+            role__permissions__module=module_name,
+            role__permissions__is_granted=True
+        ).exists()
+    
+    def has_permission(self, module_name, action, context=None):
+        """Check if user has specific permission"""
+        if self.is_admin():
+            return True
+            
+        permission = self.user_roles.filter(
+            is_active=True,
+            role__is_active=True,
+            role__permissions__module=module_name,
+            role__permissions__action__in=[action, 'full_access'],
+            role__permissions__is_granted=True
+        ).first()
+        
+        if not permission:
+            return False
+            
+        # Check conditions if context provided
+        if context and hasattr(permission, 'check_conditions'):
+            return permission.check_conditions(context)
+            
+        return True
+    
+    def get_role_permissions(self):
+        """Get permissions grouped by role"""
+        permissions = {}
+        
+        for user_role in self.user_roles.filter(is_active=True):
+            role = user_role.role
+            if not role.is_active:
+                continue
+                
+            permissions[role.name] = role.get_permission_summary()
+            
+        return permissions

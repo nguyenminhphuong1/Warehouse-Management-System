@@ -300,6 +300,8 @@ class Pallet(models.Model):
             save=False
         )
         buffer.close()
+
+        self.save()
     
     # Properties
     @property
