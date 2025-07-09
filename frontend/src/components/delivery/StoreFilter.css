@@ -1,0 +1,37 @@
+/* StoreFilter.css - Chuyển từ Tailwind sang CSS thuần */
+
+.sf-card {
+  margin-bottom: 1.5rem;
+}
+
+.sf-title {
+  font-size: 1.125rem;
+}
+
+.sf-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .sf-content {
+    flex-direction: row;
+  }
+}
+
+.sf-select-group {
+  flex: 1;
+}
+
+.sf-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.sf-select-trigger {
+  width: 100%;
+} 

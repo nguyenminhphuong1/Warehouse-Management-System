@@ -28,6 +28,7 @@ import {
 // Import Module Components
 import XuatHang from './pages/XuatHang/XuatHang';
 import NhapHang from './pages/NhapHang/NhapHang';
+import KiemTraGiaoHang from "./pages/KiemTraGiaoHang/KiemTraGiaoHang"
 // Temporary Context Providers (tạm thời)
 
 
@@ -233,14 +234,6 @@ const QuanLyKho = () => (
     <p>Module quản lý kho</p>
   </div>
 );
-
-const KiemTraGiaoHang = () => (
-  <div style={{ padding: '20px' }}>
-    <h1>✅ Kiểm Tra Giao Hàng</h1>
-    <p>Module kiểm tra giao hàng</p>
-  </div>
-);
-
 const BaoCao = () => (
   <div style={{ padding: '20px' }}>
     <h1>📊 Báo Cáo</h1>

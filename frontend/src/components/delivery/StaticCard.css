@@ -1,0 +1,50 @@
+/* StaticCard.css - Chuyển từ Tailwind sang CSS thuần */
+
+.sc-container {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .sc-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .sc-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.sc-card-content {
+  padding: 1rem;
+}
+
+.sc-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.sc-blue {
+  color: #2563eb;
+}
+
+.sc-green {
+  color: #16a34a;
+}
+
+.sc-yellow {
+  color: #ca8a04;
+}
+
+.sc-purple {
+  color: #9333ea;
+}
+
+.sc-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+} 

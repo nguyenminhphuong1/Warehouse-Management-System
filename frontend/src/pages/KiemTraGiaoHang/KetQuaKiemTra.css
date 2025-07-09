@@ -1,0 +1,216 @@
+/* KetQuaKiemTra.css - Chuyển từ Tailwind sang CSS thuần */
+
+.kqkt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.kqkt-modal-card {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 48rem;
+  margin: 0 1rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.kqkt-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.kqkt-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.kqkt-modal-icon {
+  font-size: 1.25rem;
+}
+.kqkt-modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+.kqkt-btn-close {
+  color: #6b7280;
+  font-size: 1.25rem;
+  font-weight: bold;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.kqkt-btn-close:hover {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+.kqkt-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.kqkt-section-title {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.75rem;
+}
+.kqkt-section-box {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.kqkt-row {
+  display: flex;
+  justify-content: space-between;
+}
+.kqkt-label {
+  color: #6b7280;
+}
+.kqkt-value {
+  font-weight: 500;
+}
+.kqkt-text-right {
+  text-align: right;
+}
+.kqkt-max-w-xs {
+  max-width: 16rem;
+}
+.kqkt-confirm-status {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.kqkt-confirm-yes {
+  color: #16a34a;
+}
+.kqkt-confirm-no {
+  color: #f87171;
+}
+.kqkt-font-medium {
+  font-weight: 500;
+}
+
+.kqkt-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.kqkt-table-header-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+.kqkt-th-left {
+  text-align: left;
+  padding: 0.5rem 0;
+  font-weight: 600;
+}
+.kqkt-th-center {
+  text-align: center;
+  padding: 0.5rem 0;
+  font-weight: 600;
+}
+.kqkt-th-right {
+  text-align: right;
+  padding: 0.5rem 0;
+  font-weight: 600;
+}
+.kqkt-table-row {
+  border-bottom: 1px solid #f3f4f6;
+}
+.kqkt-td {
+  padding: 0.5rem 0;
+}
+.kqkt-td-left {
+  text-align: left;
+}
+.kqkt-td-center {
+  text-align: center;
+}
+.kqkt-td-right {
+  text-align: right;
+}
+.kqkt-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+.kqkt-total-label {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+.kqkt-total-value {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #2563eb;
+}
+
+.kqkt-notes-box {
+  background: #fef9c3;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #facc15;
+}
+.kqkt-notes-text {
+  color: #374151;
+}
+
+.kqkt-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+.kqkt-btn-confirm {
+  flex: 1;
+  height: 2.5rem;
+  padding: 0 1rem;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 0.375rem;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.kqkt-btn-confirm:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+.kqkt-btn-qr {
+  flex: 1;
+  height: 2.5rem;
+  padding: 0 1rem;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.kqkt-btn-qr:hover:not(:disabled) {
+  background: #f3f4f6;
+}

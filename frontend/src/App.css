@@ -3,6 +3,15 @@
    ======================================== */
 
 /* CSS Reset & Base Styles */
+.App {
+  text-align: center;
+}
+
+/* Tailwind CSS styles */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
 * {
   margin: 0;
   padding: 0;

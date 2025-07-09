@@ -1,0 +1,272 @@
+/* Container and Layout */
+.kgh-container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.kgh-content-wrapper {
+  /* Content wrapper styles */
+}
+
+.kgh-padding {
+  padding: 20px;
+}
+
+.kgh-max-width {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Header Section */
+.kgh-header-section {
+  margin-bottom: 2 rem;
+}
+
+.kgh-header-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kgh-main-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .kgh-main-title {
+    font-size: 2.25rem;
+  }
+}
+
+.kgh-icon-large {
+  font-size: 1.875rem;
+}
+
+.kgh-subtitle {
+  color: #4b5563;
+  margin-top: 0.5rem;
+}
+
+.kgh-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.kgh-refresh-btn:hover {
+  background-color: #f9fafb;
+}
+
+.kgh-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kgh-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Card Styles */
+.kgh-filter-card,
+.kgh-orders-card {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 1.5rem;
+}
+
+.kgh-card-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.kgh-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.kgh-card-body {
+  padding: 1rem;
+}
+
+/* Filter Section */
+.kgh-filter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .kgh-filter-row {
+    flex-direction: row;
+  }
+}
+
+.kgh-filter-item {
+  flex: 1;
+}
+
+.kgh-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.kgh-loading-row {
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.kgh-loading-text {
+  margin-left: 0.5rem;
+  color: #6b7280;
+}
+
+.kgh-select {
+  width: 100%;
+  height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #ffffff;
+  transition: all 0.2s;
+}
+
+.kgh-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Orders Section */
+.kgh-orders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kgh-orders-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kgh-pagination-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.kgh-pagination {
+  margin-top: 1.5rem;
+}
+
+/* Statistics Grid */
+.kgh-stats-grid {
+  display: grid;
+  padding-bottom: 20px;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .kgh-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .kgh-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.kgh-stat-card {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.2s;
+}
+
+.kgh-stat-card-hover:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.kgh-stat-content {
+  padding: 1rem;
+}
+
+.kgh-stat-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.kgh-stat-blue {
+  color: #2563eb;
+}
+
+.kgh-stat-green {
+  color: #16a34a;
+}
+
+.kgh-stat-yellow {
+  color: #d97706;
+}
+
+.kgh-stat-purple {
+  color: #9333ea;
+}
+
+.kgh-stat-label {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+/* Error State (keeping existing styles) */
+.kgh-min-h-screen {
+  min-height: 100vh;
+}
+
+.kgh-card {
+  /* Keep existing styles from original CSS */
+}
+
+.kgh-text-red {
+  color: #dc2626;
+}
+
+.kgh-title {
+  /* Keep existing styles from original CSS */
+}
+
+.kgh-text-gray {
+  color: #6b7280;
+}
+
+.kgh-btn-refresh {
+  /* Keep existing styles from original CSS */
+}

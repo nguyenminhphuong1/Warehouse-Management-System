@@ -1,0 +1,124 @@
+/* OrdersTable.css - Chuyển từ Tailwind sang CSS thuần */
+
+.ot-container {
+  overflow-x: auto;
+}
+
+.ot-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ot-header-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ot-th {
+  padding: 0.75rem;
+  font-weight: 600;
+  min-width: 100px;
+}
+
+.ot-th-left {
+  text-align: left;
+}
+
+.ot-th-center {
+  text-align: center;
+}
+
+.ot-row {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s;
+}
+
+.ot-row:hover {
+  background-color: #f9fafb;
+}
+
+.ot-td {
+  padding: 0.75rem;
+}
+
+.ot-font-medium {
+  font-weight: 500;
+}
+
+.ot-text-center {
+  text-align: center;
+}
+
+.ot-confirmed {
+  color: #16a34a;
+  font-size: 1.25rem;
+}
+
+.ot-unconfirmed {
+  color: #f87171;
+  font-size: 1.25rem;
+}
+
+.ot-btn-qr {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.ot-btn-active {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.ot-btn-active:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.ot-btn-disabled {
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.ot-btn-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.ot-btn-detail:hover {
+  background: #f3f4f6;
+}
+
+.ot-empty-cell {
+  text-align: center;
+  padding: 3rem 0;
+  color: #6b7280;
+}
+
+.ot-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ot-empty-icon {
+  font-size: 2.25rem;
+  margin-bottom: 1rem;
+} 
