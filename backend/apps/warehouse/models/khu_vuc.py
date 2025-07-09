@@ -232,7 +232,7 @@ class KhuVuc(models.Model):
                 
                 if created:
                     created_count += 1
-        
+         
         return created_count
     
     def set_maintenance(self, reason="", user=None):
