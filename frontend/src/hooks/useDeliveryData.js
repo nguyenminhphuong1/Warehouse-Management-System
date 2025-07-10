@@ -4,8 +4,7 @@ import { useState, useEffect } from "react"
 import { mockApiService } from "../services/mockApiService"
 
 export const useDeliveryData = () => {
-  // States
-  const [orders, setOrders] = useState([])
+  const [allOrders, setAllOrders] = useState([]) // Lưu toàn bộ dữ liệu
   const [stores, setStores] = useState([])
   const [selectedStore, setSelectedStore] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
@@ -19,7 +18,7 @@ export const useDeliveryData = () => {
   const [ordersError, setOrdersError] = useState(null)
   const [storesError, setStoresError] = useState(null)
 
-  // Pagination info
+  // Pagination info (tính toán từ allOrders)
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -51,19 +50,33 @@ export const useDeliveryData = () => {
     fetchStores()
   }, [])
 
-  // Fetch orders
+  // Fetch all orders (không phân trang)
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchAllOrders = async () => {
       try {
         setOrdersLoading(true)
         setOrdersError(null)
-        console.log(`🔄 Đang tải đơn hàng - Store: ${selectedStore}, Page: ${currentPage}`)
+        console.log(`🔄 Đang tải toàn bộ đơn hàng - Store: ${selectedStore}`)
 
-        const response = await mockApiService.getOrders(selectedStore, currentPage, pageSize)
+        // Gọi API để lấy toàn bộ dữ liệu (không truyền currentPage và pageSize)
+        const response = await mockApiService.getAllOrders(selectedStore)
         if (response.success) {
-          setOrders(response.data)
-          setPagination(response.pagination)
-          console.log("✅ Tải đơn hàng thành công:", response.data.length, "đơn hàng")
+          setAllOrders(response.data)
+          
+          // Tính toán pagination từ toàn bộ dữ liệu
+          const totalItems = response.data.length
+          const totalPages = Math.ceil(totalItems / pageSize)
+          
+          setPagination({
+            currentPage: 1, // Reset về trang 1 khi thay đổi store
+            totalPages,
+            totalItems,
+            itemsPerPage: pageSize,
+          })
+          
+          setCurrentPage(1) // Reset về trang 1
+          
+          console.log("✅ Tải toàn bộ đơn hàng thành công:", response.data.length, "đơn hàng")
         }
       } catch (error) {
         console.error("❌ Lỗi khi tải đơn hàng:", error)
@@ -73,15 +86,24 @@ export const useDeliveryData = () => {
       }
     }
 
-    fetchOrders()
-  }, [selectedStore, currentPage, pageSize])
+    fetchAllOrders()
+  }, [selectedStore]) // Chỉ fetch lại khi thay đổi store
 
-  // Reset page when store changes
+  // Tính toán orders cho trang hiện tại từ allOrders
+  const orders = allOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+
+  // Cập nhật pagination khi currentPage thay đổi
   useEffect(() => {
-    if (currentPage !== 1) {
-      setCurrentPage(1)
-    }
-  }, [selectedStore])
+    const totalItems = allOrders.length
+    const totalPages = Math.ceil(totalItems / pageSize)
+    
+    setPagination({
+      currentPage,
+      totalPages,
+      totalItems,
+      itemsPerPage: pageSize,
+    })
+  }, [currentPage, allOrders, pageSize])
 
   // Handlers
   const handleStoreChange = (storeId) => {
@@ -100,10 +122,22 @@ export const useDeliveryData = () => {
       setOrdersError(null)
       console.log("🔄 Đang refresh danh sách đơn hàng...")
 
-      const response = await mockApiService.getOrders(selectedStore, currentPage, pageSize)
+      const response = await mockApiService.getAllOrders(selectedStore)
       if (response.success) {
-        setOrders(response.data)
-        setPagination(response.pagination)
+        setAllOrders(response.data)
+        
+        const totalItems = response.data.length
+        const totalPages = Math.ceil(totalItems / pageSize)
+        
+        setPagination({
+          currentPage: 1,
+          totalPages,
+          totalItems,
+          itemsPerPage: pageSize,
+        })
+        
+        setCurrentPage(1)
+        
         console.log("✅ Refresh thành công")
       }
     } catch (error) {
@@ -116,7 +150,8 @@ export const useDeliveryData = () => {
 
   return {
     // Data
-    orders,
+    orders, // Dữ liệu của trang hiện tại
+    allOrders, // Toàn bộ dữ liệu (để filter)
     stores,
     pagination,
 
@@ -137,6 +172,6 @@ export const useDeliveryData = () => {
     handleStoreChange,
     handlePageChange,
     refreshOrders,
-    setOrders, // Để update local state sau khi confirm
+    setOrders: setAllOrders, // Update toàn bộ dữ liệu
   }
 }

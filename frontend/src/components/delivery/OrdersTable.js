@@ -12,6 +12,7 @@ export const OrdersTable = ({ orders, onQRScan, onViewDetail, confirmLoading, sc
             <th className="ot-th ot-th-left">Mã đơn hàng</th>
             <th className="ot-th ot-th-left">Cửa hàng đích</th>
             <th className="ot-th ot-th-left">Trạng thái</th>
+            <th className="ot-th ot-th-left">Ngày tạo</th>
             <th className="ot-th ot-th-center">Đã xác nhận</th>
             <th className="ot-th ot-th-center">Quét mã QR</th>
             <th className="ot-th ot-th-center">Chi tiết đơn</th>
@@ -35,6 +36,7 @@ export const OrdersTable = ({ orders, onQRScan, onViewDetail, confirmLoading, sc
                 <td className="ot-td">
                   <OrderStatusBadge status={order.status} />
                 </td>
+                <td className="ot-td ot-text-center">{order.createdAt}</td>
                 <td className="ot-td ot-text-center">
                   {order.isConfirmed ? (
                     <span className="ot-confirmed">✅</span>

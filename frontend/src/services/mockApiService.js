@@ -10,7 +10,7 @@ const mockStores = [
   
   const mockOrders = [
     {
-      id: "DH001",
+      id: "1",
       orderCode: "DH001",
       targetStore: "Cửa hàng Quận 1",
       storeId: "store1",
@@ -28,9 +28,10 @@ const mockStores = [
         { name: "Quần jean", quantity: 1, price: 150000 },
       ],
       notes: "Giao hàng trước 5h chiều",
+      createdAt: "2024-01-15T08:30:00Z",
     },
     {
-      id: "DH002",
+      id: "2",
       orderCode: "DH002",
       targetStore: "Cửa hàng Quận 3",
       storeId: "store2",
@@ -45,9 +46,10 @@ const mockStores = [
       totalAmount: 180000,
       items: [{ name: "Váy đầm", quantity: 1, price: 180000 }],
       notes: "Khách yêu cầu gọi trước khi giao",
+      createdAt: "2024-01-15T09:15:00Z",
     },
     {
-      id: "DH003",
+      id: "3",
       orderCode: "DH003",
       targetStore: "Cửa hàng Quận 7",
       storeId: "store3",
@@ -62,9 +64,10 @@ const mockStores = [
       totalAmount: 320000,
       items: [{ name: "Giày thể thao", quantity: 1, price: 320000 }],
       notes: "Đã giao thành công",
+      createdAt: "2024-01-14T10:00:00Z",
     },
     {
-      id: "DH004",
+      id: "4",
       orderCode: "DH004",
       targetStore: "Cửa hàng Thủ Đức",
       storeId: "store4",
@@ -82,9 +85,10 @@ const mockStores = [
         { name: "Túi xách", quantity: 1, price: 150000 },
       ],
       notes: "Giao vào buổi sáng",
+      createdAt: "2024-01-16T07:45:00Z",
     },
     {
-      id: "DH005",
+      id: "5",
       orderCode: "DH005",
       targetStore: "Cửa hàng Quận 1",
       storeId: "store1",
@@ -99,9 +103,10 @@ const mockStores = [
       totalAmount: 200000,
       items: [{ name: "Quần short", quantity: 2, price: 100000 }],
       notes: "",
+      createdAt: "2024-01-16T11:20:00Z",
     },
     {
-      id: "DH006",
+      id: "6",
       orderCode: "DH006",
       targetStore: "Cửa hàng Bình Thạnh",
       storeId: "store5",
@@ -116,6 +121,7 @@ const mockStores = [
       totalAmount: 380000,
       items: [{ name: "Đầm dạ hội", quantity: 1, price: 380000 }],
       notes: "Hàng dễ vỡ, cẩn thận",
+      createdAt: "2024-01-16T13:10:00Z",
     },
   ]
   
@@ -132,23 +138,42 @@ const mockStores = [
         }, 800)
       })
     },
-  
-    // Lấy danh sách đơn hàng
-    async getOrders(storeId = "all", page = 1, limit = 5) {
+
+    // Lấy toàn bộ danh sách đơn hàng (không phân trang)
+    async getAllOrders(storeId = "all") {
       return new Promise((resolve) => {
         setTimeout(() => {
           let filteredOrders = mockOrders
-  
+
           // Filter theo store
           if (storeId && storeId !== "all") {
             filteredOrders = mockOrders.filter((order) => order.storeId === storeId)
           }
+
+          resolve({
+            success: true,
+            data: filteredOrders, // Trả về toàn bộ dữ liệu đã filter
+          })
+        }, 1000)
+      })
+    },
   
+    // Lấy danh sách đơn hàng (có phân trang)
+    async getOrders(storeId = "all", page = 1, limit = 5) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          let filteredOrders = mockOrders
+
+          // Filter theo store
+          if (storeId && storeId !== "all") {
+            filteredOrders = mockOrders.filter((order) => order.storeId === storeId)
+          }
+
           // Pagination
           const startIndex = (page - 1) * limit
           const endIndex = startIndex + limit
           const paginatedOrders = filteredOrders.slice(startIndex, endIndex)
-  
+
           resolve({
             success: true,
             data: paginatedOrders,
